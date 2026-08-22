@@ -112,6 +112,11 @@ export function GeneratorPanel() {
               >
                 Buy {purchaseCount || "-"} · {number.format(cost)} credits
               </Button>
+              {!affordable && purchaseCount > 0 && (
+                <p className="mt-1 text-center text-[10px] text-black/45 dark:text-white/40">
+                  {number.format(cost - state.resources.credits)} credits short
+                </p>
+              )}
             </article>
           )
         })}

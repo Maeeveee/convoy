@@ -20,6 +20,16 @@ export type GameEvent = {
 
 export const EVENTS: GameEvent[] = [
   {
+    id: "emptyTank",
+    trigger: "emptyFuel",
+    title: "The convoy rolls to a stop",
+    description: "The tank is dry. The family searches the roadside while the generators keep working.",
+    choices: [
+      { id: "reserve", label: "Use the hidden reserve", consequence: "+8 Fuel, -80 Trade Credits", fuel: 8, credits: -80, bond: 1 },
+      { id: "wait", label: "Wait and regroup", consequence: "+3 Fuel, -2 Bond", fuel: 3, bond: -2 },
+    ],
+  },
+  {
     id: "roadsideMarket",
     trigger: "scheduled",
     title: "A market under canvas",

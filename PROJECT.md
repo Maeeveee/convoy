@@ -132,8 +132,10 @@ Generators are repeatable purchases inspired by classic idle incrementals such a
 **Fuel purchase**
 
 - Fuel costs 2.5 Trade Credits per unit in the first balance pass.
+- Fuel price increases by 8% after each successful refill transaction: `current_price = 2.5 * 1.08^refill_count`.
 - The player may buy 10, 25, or enough Fuel to fill the tank.
 - Fuel is never generated automatically by normal generators.
+- When Fuel reaches zero, distance stops completely and an emergency event offers recovery choices. The emergency event is cooldown-protected so an unresolved fuel problem does not repeat every second.
 
 **Relationship to other systems**
 

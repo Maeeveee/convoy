@@ -3,7 +3,7 @@ import { create } from "zustand"
 import {
   CHARACTER_IDS,
   EXTERIOR_BY_LEVEL,
-  FUEL_PRICE_PER_UNIT,
+  fuelPricePerUnit,
   GENERATORS,
   INITIAL_CAPACITIES,
   INITIAL_RESOURCES,
@@ -63,6 +63,7 @@ export function createInitialState(now = Date.now()): GameState {
     eventTimerSeconds: 0,
     pendingEvent: null,
     pendingNightDay: null,
+    fuelPurchases: 0,
   }
 }
 
@@ -76,7 +77,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const crossedDay = next.day > state.day
       const timer = state.eventTimerSeconds + elapsedSeconds
       const trigger =
-        next.resources.fuel <= 20
+        next.resources.fuel <= 0
+          ? "emptyFuel"
+          : next.resources.fuel <= 20
           ? "lowFuel"
           : next.exterior.level === 1 && timer >= 120
             ? "openPickup"
@@ -86,8 +89,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const shouldEvent =
         !state.pendingEvent &&
         !state.pendingNightDay &&
-        timer >= EVENT_INTERVAL_SECONDS ||
-        (trigger !== "scheduled" && timer >= EVENT_COOLDOWN_SECONDS)
+        (timer >= EVENT_INTERVAL_SECONDS ||
+          (trigger !== "scheduled" && timer >= EVENT_COOLDOWN_SECONDS))
       return {
         ...next,
         eventTimerSeconds: shouldEvent ? 0 : timer,
@@ -155,7 +158,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get()
     const availableCapacity = state.capacities.fuel - state.resources.fuel
     const fuel = Math.min(Math.floor(amount), Math.floor(availableCapacity))
-    const cost = fuel * FUEL_PRICE_PER_UNIT
+    const cost = fuel * fuelPricePerUnit(state.fuelPurchases)
     if (fuel < 1) return { ok: false, reason: "Fuel tank is already full." }
     if (cost > state.resources.credits) {
       return { ok: false, reason: "Not enough Trade Credits." }
@@ -167,6 +170,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         credits: state.resources.credits - cost,
       },
       lastSeenTimestamp: Date.now(),
+      fuelPurchases: state.fuelPurchases + 1,
     })
     return { ok: true, amount: fuel }
   },

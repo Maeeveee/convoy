@@ -39,6 +39,10 @@ function isValidSave(value: unknown): value is PersistedGameState {
   }
   if (!isFiniteNumber(save.eventTimerSeconds) || save.eventTimerSeconds < 0) return false
   if (
+    !Number.isInteger(save.fuelPurchases) ||
+    (save.fuelPurchases ?? -1) < 0
+  ) return false
+  if (
     save.pendingEvent !== null &&
     (typeof save.pendingEvent !== "string" || !eventById(save.pendingEvent))
   ) return false
@@ -119,6 +123,7 @@ export function toPersistedState(state: GameState): PersistedGameState {
     eventTimerSeconds: state.eventTimerSeconds,
     pendingEvent: state.pendingEvent,
     pendingNightDay: state.pendingNightDay,
+    fuelPurchases: state.fuelPurchases,
   }
 }
 

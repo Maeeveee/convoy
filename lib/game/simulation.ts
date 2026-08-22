@@ -107,7 +107,7 @@ export function simulateElapsed(
     0,
     state.capacities.fuel,
   )
-  const fuelFactor = state.resources.fuel > 0 ? 1 : 0.15
+  const fuelFactor = state.resources.fuel > 0 ? 1 : 0
   const distance =
     state.distance + BASE_DISTANCE_PER_SECOND * fuelFactor * productionSeconds
   const childConnecting = state.characters.child.task === "connect"

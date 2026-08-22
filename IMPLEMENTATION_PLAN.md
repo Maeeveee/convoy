@@ -232,6 +232,8 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 - Add clear low-resource warnings and explain gradual penalties before they become severe.
 - Add number formatting, rate display, purchase affordability, and feedback for failed actions.
 - Test active simulation, browser tab throttling, reloads, offline return, clock changes, and reset-save behavior.
+- Display the live day countdown and verify empty Fuel stalls distance until the emergency decision or refill restores Fuel.
+- Verify Fuel price escalation across multiple successful refuels and persisted reloads.
 - Run lint, typecheck, production build, and manual responsive checks.
 - Add lightweight browser smoke coverage if a browser test runner is introduced; otherwise document the manual smoke script.
 
@@ -246,6 +248,24 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 - No critical gameplay, hydration, persistence, or accessibility defects remain.
 - A fresh save and a returning save both support the complete MVP loop.
 - `npm run lint`, `npm run typecheck`, and `npm run build` pass.
+
+**QA results (current pass):**
+
+- Automated balance guardrails pass: first-generator payback remains 30-90 seconds and fresh Fuel runway is at least 30 minutes.
+- Automated state coverage passes for generator cycles, event choices, night choices, persistence, offline progress, affordability, and pending-decision precedence.
+- `npm test` passes with 28 tests.
+- `npm run lint` passes.
+- `npm run typecheck` passes.
+- `npm run build` passes.
+- Headless Edge captured desktop and mobile viewport renders successfully; this environment cannot visually inspect the generated images, so final visual hierarchy and touch-target review remain manual QA items.
+- HTTP smoke check returns status 200 from the Next development server. Hydrated client text is not exposed in the server DOM dump because the game shell is a client component; browser interaction remains a manual follow-up.
+
+**Remaining manual QA:**
+
+- Confirm desktop and mobile screenshots visually.
+- Test keyboard focus order and modal focus behavior.
+- Test localStorage reload, offline return, reset, and pending event recovery in a real browser session.
+- Play a fresh 5-15 minute session and tune event frequency or generator values only if observed behavior differs from the guardrails.
 
 ### Phase 6: Legacy Prestige and Post-MVP Expansion
 

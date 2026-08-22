@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import {
+  AlertTriangle,
   CarFront,
   Gauge,
   Heart,
@@ -51,6 +52,24 @@ export function GameShell() {
   }
 
   const dayProgress = (elapsedSeconds % DAY_DURATION_SECONDS) / DAY_DURATION_SECONDS
+  const daySecondsRemaining = DAY_DURATION_SECONDS - (elapsedSeconds % DAY_DURATION_SECONDS)
+  const warnings = [
+    resources.fuel <= 20
+      ? {
+          label: resources.fuel <= 0 ? "Fuel depleted" : "Fuel reserve low",
+          detail:
+            resources.fuel <= 0
+              ? "Travel is reduced to emergency speed."
+              : `${Math.floor(resources.fuel / 0.03 / 60)} minutes remain at current consumption.`,
+        }
+      : null,
+    bond <= 35
+      ? {
+          label: "Family bond strained",
+          detail: "Choose family-focused events or change assignments before the next night ritual.",
+        }
+      : null,
+  ].filter((warning): warning is { label: string; detail: string } => warning !== null)
 
   return (
     <main className="min-h-svh bg-[#d8d2c4] text-[#20231f] dark:bg-[#171a18] dark:text-[#ebe5d7]">
@@ -62,7 +81,7 @@ export function GameShell() {
             </div>
             <div>
               <h1 className="text-base font-semibold uppercase tracking-[0.18em]">Convoy</h1>
-              <p className="text-[11px] text-[#aeb8ad]">Journey log · Day {day}</p>
+              <p className="text-[11px] text-[#aeb8ad]">Journey log · Day {day} · {formatClock(daySecondsRemaining)} to night</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -113,6 +132,23 @@ export function GameShell() {
           />
         </div>
       </section>
+
+      {warnings.length > 0 && (
+        <section
+          aria-live="polite"
+          className="border-b border-[#9e4f37]/35 bg-[#c96a46]/12 text-[#6e2d1c] dark:bg-[#9e4f37]/15 dark:text-[#f0a287]"
+        >
+          <div className="mx-auto flex max-w-[1600px] flex-wrap gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
+            {warnings.map((warning) => (
+              <div key={warning.label} className="flex min-w-0 items-center gap-2 text-xs">
+                <AlertTriangle className="size-4 shrink-0" />
+                <strong>{warning.label}</strong>
+                <span className="text-current/70">{warning.detail}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="mx-auto max-w-[1600px]">
         <ConvoyScene dayProgress={dayProgress} />
@@ -165,6 +201,12 @@ export function GameShell() {
       )}
     </main>
   )
+}
+
+function formatClock(seconds: number) {
+  const minutes = Math.floor(seconds / 60)
+  const remainder = Math.floor(seconds % 60)
+  return `${minutes}:${remainder.toString().padStart(2, "0")}`
 }
 
 function ResourceStat({

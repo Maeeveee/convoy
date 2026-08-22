@@ -37,7 +37,7 @@ describe("simulation", () => {
       2_000,
     )
 
-    expect(next.distance).toBeCloseTo(0.12)
+    expect(next.distance).toBe(0)
   })
 
   it("applies the active tick cap", () => {

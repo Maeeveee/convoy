@@ -28,6 +28,13 @@ describe("persistence", () => {
     expect(loaded?.capacities).toEqual(INITIAL_CAPACITIES)
   })
 
+  it("round trips the fuel purchase counter", () => {
+    const initial = { ...createInitialState(1_000), fuelPurchases: 4 }
+    const loaded = deserializeState(serializeState(initial))
+
+    expect(loaded?.fuelPurchases).toBe(4)
+  })
+
   it("falls back to a new state for malformed or unsupported saves", () => {
     const storage = new MemoryStorage()
     storage.setItem("convoy-save", "not-json")

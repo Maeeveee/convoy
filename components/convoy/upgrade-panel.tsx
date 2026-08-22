@@ -44,6 +44,11 @@ export function UpgradePanel() {
             >
               Upgrade · {number.format(result.cost)} credits
             </Button>
+            {!affordable && (
+              <p className="mt-2 text-xs text-black/50 dark:text-white/45" role="status">
+                Need {number.format(result.cost - state.resources.credits)} more credits.
+              </p>
+            )}
           </div>
         ) : (
           <p className="border border-[#7d913f]/40 bg-[#7d913f]/10 p-3 text-xs font-semibold text-[#516126] dark:text-[#bdcf72]">Exterior fully upgraded.</p>

@@ -60,4 +60,33 @@ describe("progression transactions", () => {
     expect(useGameStore.getState().resources.fuel).toBe(80)
     expect(useGameStore.getState().resources.credits).toBe(50)
   })
+
+  it("raises the fuel price after each successful refill", () => {
+    useGameStore.getState().reset()
+    useGameStore.setState((state) => ({
+      resources: { ...state.resources, fuel: 0, credits: 1_000 },
+    }))
+
+    useGameStore.getState().buyFuel(10)
+    expect(useGameStore.getState().fuelPurchases).toBe(1)
+    expect(useGameStore.getState().resources.credits).toBe(975)
+
+    useGameStore.getState().buyFuel(10)
+    expect(useGameStore.getState().fuelPurchases).toBe(2)
+    expect(useGameStore.getState().resources.credits).toBe(948)
+  })
+
+  it("does not schedule a reactive event while a decision is pending", () => {
+    useGameStore.getState().reset()
+    useGameStore.setState((state) => ({
+      resources: { ...state.resources, fuel: 10 },
+      pendingNightDay: 2,
+      eventTimerSeconds: 60,
+    }))
+
+    useGameStore.getState().tick(1)
+
+    expect(useGameStore.getState().pendingEvent).toBeNull()
+    expect(useGameStore.getState().pendingNightDay).toBe(2)
+  })
 })

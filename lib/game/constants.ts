@@ -27,6 +27,11 @@ export const BASE_CONSUMPTION_PER_SECOND = {
 
 export const BASE_DISTANCE_PER_SECOND = 0.08
 export const FUEL_PRICE_PER_UNIT = 2.5
+export const FUEL_PRICE_GROWTH = 1.08
+
+export function fuelPricePerUnit(purchases: number) {
+  return FUEL_PRICE_PER_UNIT * FUEL_PRICE_GROWTH ** purchases
+}
 
 export const CHARACTER_IDS: CharacterId[] = ["father", "mother", "child"]
 
