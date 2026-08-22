@@ -173,6 +173,23 @@
     animation: road-drift 25s linear infinite reverse;
   }
 
+  .city-lights {
+    position: absolute;
+    inset: 23% 0 auto;
+    height: 4px;
+    opacity: .7;
+    background: repeating-linear-gradient(90deg, transparent 0 26px, #d1a454 26px 28px, transparent 28px 83px, #c97b4c 83px 85px, transparent 85px 140px);
+    animation: road-drift 30s linear infinite reverse;
+  }
+
+  .skyline-dust {
+    position: absolute;
+    inset: 48% 0 auto;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, transparent 0 100px, rgb(235 218 174 / 40%) 100px 180px, transparent 180px 260px);
+    filter: blur(1px);
+  }
+
   .road-stripe {
     position: absolute;
     inset: 48% -20% auto;
@@ -205,7 +222,14 @@
   .truck-tier-2 .truck-bed { background: #806f54; }
   .truck-tier-3 .truck-bed, .truck-tier-3 .truck-cabin { background: #626a62; }
   .truck-cover { position: absolute; inset: -20px 4px auto; height: 22px; border: 3px solid #313b34; background: #9a825c; transform: skewX(-12deg); }
+  .truck-bed-rail { position: absolute; inset: 18px 10px auto; height: 4px; border-top: 2px solid rgb(24 34 30 / 50%); border-bottom: 1px solid rgb(255 255 255 / 15%); }
+  .cargo-crate { position: absolute; bottom: 9px; width: 25px; height: 22px; border: 2px solid #3d3729; background: #b28b51; box-shadow: inset 0 0 0 3px rgb(79 57 31 / 25%); }
+  .cargo-crate-one { left: 35%; transform: rotate(-3deg); }
+  .cargo-crate-two { left: 51%; bottom: 13px; transform: rotate(4deg) scale(.8); }
   .truck-window { position: absolute; inset: 12px 13px 35px; border: 3px solid #202b29; background: #9db0a8; }
+  .truck-door-line { position: absolute; inset: 9px 7px 25px auto; width: 2px; background: #283532; }
+  .truck-handle { position: absolute; right: 10px; bottom: 27px; width: 10px; height: 3px; background: #bf9b58; }
+  .truck-headlamp { position: absolute; right: -3px; top: 42px; width: 9px; height: 15px; border: 2px solid #343c34; background: #e0c76f; border-radius: 2px; }
   .truck-bumper { position: absolute; right: -9px; bottom: -8px; width: 36px; height: 11px; background: #28322e; }
   .truck-wheel { position: absolute; bottom: -22px; width: 42px; height: 42px; border: 7px solid #202622; border-radius: 50%; background: #808078; }
   .truck-wheel-left { left: 17%; }
@@ -216,9 +240,11 @@
   .character-mother { left: 17%; }
   .character-child { left: 42%; bottom: 10px; transform: scale(.82); }
   .character-head { margin: auto; width: 20px; height: 20px; border: 3px solid #27322d; border-radius: 50%; background: #b78359; }
+  .character-hair { position: absolute; top: -1px; left: 11px; width: 20px; height: 10px; border-radius: 14px 14px 3px 3px; background: #46372e; }
   .character-body { margin: -1px auto 0; width: 30px; height: 35px; border: 3px solid #27322d; border-radius: 12px 12px 4px 4px; background: #b15c4f; }
   .character-mother .character-body { background: #6b7f77; }
   .character-child .character-body { background: #c39948; }
+  .character-bag { position: absolute; right: -1px; bottom: 5px; width: 11px; height: 17px; border: 2px solid #34443b; background: #687353; transform: rotate(8deg); }
   .character-label { position: absolute; top: 58px; left: 50%; width: max-content; transform: translateX(-50%); color: #f6efde; text-shadow: 0 1px 3px #1c2420; }
   .character-label span, .character-label small { display: block; }
   .character-label span { font-size: 10px; font-weight: 700; }

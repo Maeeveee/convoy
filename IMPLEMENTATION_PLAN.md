@@ -282,12 +282,15 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 - Replace geometric placeholders with a consistent final art direction.
 - Add more event variety, character expressions, and scenery/parallax layers.
 - Add descriptive ending tiers and optional narrative reports.
+- Add audio polish using the existing road ambience and two music tracks.
 - Evaluate Phaser or PixiJS only if CSS/HTML no longer handles the required visual complexity.
-- Consider Capacitor, Electron, or Tauri packaging only after browser retention and balance are satisfactory.
+- Keep Capacitor, Electron, and Tauri packaging deferred until browser retention and balance are satisfactory.
 
 **Exit criteria:**
 
 - Each expansion has a demonstrated player or retention benefit and does not weaken the one-place, decision-focused design pillars.
+
+Current Phase 6 preparation includes browser-safe playback for `road-sound.mp3`, `music-1.mp3`, and `music-2.mp3`, plus a richer geometric placeholder scene. Packaging remains explicitly deferred.
 
 ## 5. Core Rules to Implement
 

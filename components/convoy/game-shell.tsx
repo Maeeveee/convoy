@@ -24,6 +24,7 @@ import { UpgradePanel } from "./upgrade-panel"
 import { FuelPanel } from "./fuel-panel"
 import { DecisionDialogs } from "./decision-dialogs"
 import { ReportCard } from "./report-card"
+import { AudioController } from "./audio-controller"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 
@@ -85,6 +86,7 @@ export function GameShell() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <AudioController />
             <span className="hidden text-xs text-[#aeb8ad] sm:inline">
               {exterior.id === "openPickup"
                 ? "Open pickup"

@@ -41,7 +41,7 @@ These principles guide every design decision. If a feature does not support one 
 | More game-engine-like visuals later | **Phaser 3** or **PixiJS** | Optional; only relevant if the visual layers and animation become significantly more complex. |
 | Data persistence | **localStorage** | This is a single-player game with no initial need for a backend. |
 
-**MVP recommendation:** React + Zustand + CSS animation/Framer Motion. Phaser or PixiJS should only be introduced when the visual requirements justify it.
+**MVP recommendation:** React + Zustand + CSS animation/Framer Motion. Phaser or PixiJS should only be introduced when the visual requirements justify it. Mobile/desktop packaging is explicitly deferred for now.
 
 ---
 
@@ -67,7 +67,16 @@ Because the game has one main scene and a small number of character states, thre
 - Characters only need a few expression states: neutral, happy, sad, and sick.
 - Best fit for a clean, consistent visual identity.
 
-**Recommendation:** Start with geometric placeholders (colored shapes and labels) to validate the game systems. Move to Option A, B, or C after the core loop feels good.
+**Recommendation:** Start with geometric placeholders (colored shapes and labels) to validate the game systems. The current placeholder scene is intentionally improved with layered skyline silhouettes, lights, atmospheric dust, vehicle trim/cargo details, and readable character silhouettes. Move to Option A, B, or C after the core loop feels good.
+
+### Audio Assets
+
+The current audio pass uses the existing files in `public/sound`:
+
+- `road-sound.mp3` for looping road ambience
+- `music-1.mp3` and `music-2.mp3` for alternating journey music
+
+Audio starts only after the player activates the sound control because browsers block unsolicited autoplay. Music ducks while an event or night decision is open.
 
 ---
 
@@ -273,3 +282,4 @@ For solo development, avoid complex branching narrative endings early:
 - **MVP:** Endless mode with a report card combining distance, vehicle upgrade level, and bond.
 - **Later:** Two or three descriptive tiers based on final numbers, shown as text rather than separate cutscenes.
 - **Later:** Legacy prestige resets and permanent meta-upgrades after the cycle economy has been balanced.
+- **Deferred:** Capacitor, Electron, and Tauri packaging.
