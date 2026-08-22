@@ -67,6 +67,10 @@ export function generatorMilestoneMultiplier(owned: number): number {
   return 2 ** (firstMilestoneCount + laterMilestoneCount)
 }
 
+export function generatorCycleSeconds(id: GeneratorId, owned: number): number {
+  return GENERATORS[id].cycleSeconds / generatorMilestoneMultiplier(owned)
+}
+
 export function resolvePurchaseQuantity(
   state: GameState,
   id: GeneratorId,

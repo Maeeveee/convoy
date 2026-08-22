@@ -33,21 +33,25 @@ describe("simulation", () => {
     expect(next.elapsedSeconds).toBe(10)
   })
 
-  it("applies a generator's milestone multiplier", () => {
+  it("halves a generator's cycle at its milestone", () => {
     const initial = createInitialState(1_000)
     const next = simulate(
       {
         ...initial,
         generators: {
           ...initial.generators,
-          fatherToolkit: { id: "fatherToolkit", owned: 25 },
+          fatherToolkit: {
+            id: "fatherToolkit",
+            owned: 25,
+            cycleProgressSeconds: 0,
+          },
         },
       },
-      1,
+      5,
       2_000,
     )
 
-    // 25 * 0.12 * x2 milestone * bond modifier * child connection bonus.
-    expect(next.resources.spareParts).toBeCloseTo(125.8488, 3)
+    expect(next.resources.spareParts).toBeCloseTo(144.3701, 3)
+    expect(next.generators.fatherToolkit.cycleProgressSeconds).toBe(0)
   })
 })

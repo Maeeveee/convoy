@@ -32,7 +32,11 @@ describe("progression transactions", () => {
       resources: { ...state.resources, spareParts: cost },
       generators: {
         ...state.generators,
-        fatherToolkit: { id: "fatherToolkit", owned: 24 },
+        fatherToolkit: {
+          id: "fatherToolkit",
+          owned: 24,
+          cycleProgressSeconds: 0,
+        },
       },
     }))
 

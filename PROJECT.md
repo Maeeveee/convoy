@@ -1,210 +1,263 @@
 # Game Design Document
-## "Nama Kerja: Convoy" — Family Survival Idle Game
+## Working Title: Convoy - Family Survival Idle Game
 
 ---
 
-## 1. Ringkasan Konsep
+## 1. Concept Summary
 
-Sebuah keluarga kecil (Ayah, Ibu, Anak) hidup di dalam mobil pickup yang terus bergerak melintasi kota pasca-kiamat. Player **tidak mengendalikan mobil** — mobil berjalan otomatis sebagai representasi waktu dan progres. Fokus permainan adalah **manajemen sumber daya (idle/incremental)** dan **menjaga hubungan keluarga**, dibungkus dalam satu scene visual yang relatif statis.
+A small family (Father, Mother, Child) lives in a pickup truck that keeps moving through a post-apocalyptic city. The player does **not control the vehicle**. The vehicle moves automatically as a representation of time and progress. The focus is **resource management (idle/incremental)** and **maintaining family relationships**, presented in one relatively static visual scene.
 
-**Genre:** Idle/Incremental + Simulasi Keluarga (Narrative-light)
-**Perspektif:** 2D, side-view/cutaway (mirip diagram potongan melintang mobil)
-**Platform:** Web-based (browser)
-**Target sesi:** Cocok dimainkan singkat berkali-kali (5–15 menit) maupun dibiarkan idle di tab
-
----
-
-## 2. Pilar Desain (Design Pillars)
-
-Tiga prinsip yang jadi acuan tiap keputusan desain — kalau sebuah fitur gak mendukung salah satu dari ini, kemungkinan besar itu scope creep:
-
-1. **Satu tempat, bukan eksplorasi** — semua terjadi di/sekitar mobil. Dunia luar hanya "menyentuh" pemain lewat event, radio, dan pemandangan yang scroll.
-2. **Keputusan, bukan aksi** — tidak ada looting manual atau kontrol gerak. Pemain memilih (assign tugas, respon dialog, prioritas upgrade), sistem yang mengeksekusi.
-3. **Trade-off keluarga vs bertahan hidup** — efisiensi survival dan kehangatan hubungan saling tarik-menarik. Tidak ada solusi yang "menang" di semua aspek.
+**Genre:** Idle/Incremental + Family Simulation (narrative-light)
+**Perspective:** 2D side-view/cutaway, similar to a cross-section diagram of a vehicle
+**Platform:** Web browser
+**Target sessions:** Short 5-15 minute sessions or passive idle play in an open tab
 
 ---
 
-## 3. Platform & Rekomendasi Teknis
+## 2. Design Pillars
 
-### Kenapa Web-based
-- Gak butuh distribusi lewat app store, tinggal share link
-- Development cycle cepat untuk playtest & iterasi
-- Bisa di-wrap ke APK (Capacitor) atau desktop (Electron/Tauri) belakangan tanpa rewrite besar, kalau ternyata mau dipublish lebih luas
+These principles guide every design decision. If a feature does not support one of them, it is probably scope creep:
 
-### Opsi Tech Stack
+1. **One place, not exploration:** Everything happens in or around the vehicle. The outside world reaches the player through events, radio, and scrolling scenery.
+2. **Decisions, not actions:** There is no manual looting or movement control. The player assigns tasks, responds to dialogue, and chooses upgrade priorities while the system executes the work.
+3. **Family versus survival trade-offs:** Survival efficiency and family warmth pull against each other. No solution should win in every dimension.
 
-| Kebutuhan | Rekomendasi | Alasan |
+---
+
+## 3. Platform and Technical Recommendation
+
+### Why Web-Based
+
+- No app-store distribution is required; the game can be shared by link.
+- Development, playtesting, and iteration are fast.
+- The game can later be wrapped with Capacitor or Electron/Tauri without a major rewrite.
+
+### Tech Stack Options
+
+| Need | Recommendation | Reason |
 |---|---|---|
-| Rendering scene + animasi ringan | **HTML/CSS + sedikit Canvas**, atau **React + Framer Motion** | Scene statis + beberapa elemen animasi (karakter, background scroll) tidak butuh game engine penuh |
-| State management (resource, waktu, relationship) | **React + Zustand/Context**, atau vanilla JS class-based state | Kompleksitas state lumayan (banyak angka & flag), butuh struktur yang jelas dari awal |
-| Kalau nanti ingin lebih "game-engine-like" (particle, easing, layer control lebih presisi) | **Phaser 3** atau **PixiJS** | Opsional — hanya kalau visual mulai butuh banyak layer/animasi kompleks. Untuk MVP, kemungkinan besar tidak perlu. |
-| Data persistence | **localStorage** (single player, tidak perlu backend) | Idle game biasanya butuh nyimpen progress + timestamp terakhir untuk hitung idle-time saat kembali |
+| Scene rendering and light animation | **HTML/CSS + a little Canvas**, or **React + Framer Motion** | A static scene with a few animated characters and scrolling layers does not need a full game engine. |
+| State management | **React + Zustand/Context**, or a vanilla JS class-based state model | The game has many values and flags, so state needs a clear structure. |
+| More game-engine-like visuals later | **Phaser 3** or **PixiJS** | Optional; only relevant if the visual layers and animation become significantly more complex. |
+| Data persistence | **localStorage** | This is a single-player game with no initial need for a backend. |
 
-**Rekomendasi MVP:** React + Zustand + CSS animation/Framer Motion. Engine seperti Phaser baru relevan kalau kompleksitas visual meningkat signifikan (misal butuh banyak sprite sheet & physics).
-
----
-
-## 4. Strategi Aset Visual
-
-Karena scene simple (1 scene utama, sedikit state karakter), ada tiga jalur realistis:
-
-### Opsi A — Asset Pack Siap Pakai (Tercepat)
-- Sumber: [Kenney.nl](https://kenney.nl) (free, CC0), itch.io asset packs (banyak yang murah/free untuk 2D post-apocalyptic/topdown)
-- Cocok kalau kamu ingin fokus di sistem/gameplay dulu, visual belakangan
-- Risiko: gaya visual generik, mungkin gak 100% pas sama vibe yang kamu mau
-
-### Opsi B — AI-generated Art + Edit Manual
-- Generate base art (karakter, background, ikon resource) via image generation, lalu rapikan/konsistensikan gaya secara manual (palette, outline)
-- Cepat untuk eksplorasi gaya, tapi butuh effort ekstra untuk konsistensi antar aset (terutama ekspresi karakter & tahap upgrade mobil)
-
-### Opsi C — Ilustrasi Custom Sederhana (Vector/Flat)
-- Gaya flat vector (mirip ikon/UI ilustrasi) jauh lebih murah untuk dibuat & di-maintain dibanding pixel art detail
-- Karakter cukup punya beberapa **state ekspresi** (netral, senang, sedih, sakit) — tidak perlu full animasi rangka
-- Cocok kalau kamu (atau kolaborator) punya waktu untuk desain sendiri, hasilnya paling konsisten dengan visi "clean, bukan generic"
-
-**Rekomendasi:** mulai dari **placeholder geometris** (kotak/lingkaran berwarna + label) untuk validasi sistem dulu → baru masuk opsi A/B/C setelah loop gameplay-nya kerasa enak. Ini menghindari kerja ulang aset kalau desain sistem masih berubah-ubah di awal.
+**MVP recommendation:** React + Zustand + CSS animation/Framer Motion. Phaser or PixiJS should only be introduced when the visual requirements justify it.
 
 ---
 
-## 5. Struktur Scene
+## 4. Visual Asset Strategy
 
-**Layout utama (single screen, side-view cutaway):**
+Because the game has one main scene and a small number of character states, three realistic asset paths are available:
 
+### Option A - Ready-Made Asset Pack
+
+- Sources include [Kenney.nl](https://kenney.nl) (free, CC0) and 2D post-apocalyptic asset packs from itch.io.
+- Fastest when gameplay is the priority.
+- Risk: the visual style may feel generic or not fully match the intended atmosphere.
+
+### Option B - AI-Generated Art with Manual Editing
+
+- Generate base art for characters, backgrounds, and resource icons, then unify the palette, outline, and proportions manually.
+- Fast for exploring visual direction.
+- Risk: consistency across characters, expressions, and vehicle upgrade stages requires additional editing.
+
+### Option C - Simple Custom Vector/Flat Illustration
+
+- Flat vector art is cheaper to create and maintain than detailed pixel art.
+- Characters only need a few expression states: neutral, happy, sad, and sick.
+- Best fit for a clean, consistent visual identity.
+
+**Recommendation:** Start with geometric placeholders (colored shapes and labels) to validate the game systems. Move to Option A, B, or C after the core loop feels good.
+
+---
+
+## 5. Scene Structure
+
+**Main layout: single screen, side-view cutaway**
+
+```text
+[ Sky and ruined-city background - slow parallax scroll ]
+[ Front of pickup ] [ Cabin/bed - main interactive area ] [ Rear section ]
+    Father (driver's seat, although the player does not steer)
+    Mother and Child (cabin/bed positions change with assigned tasks)
+[ Resource bar: Fuel, Provisions, Spare Parts, Bond ]
+[ Upgrade panel: exterior/interior, accessed through separate tabs or buttons ]
 ```
-[ Langit & background kota reruntuhan — scroll lambat, parallax ]
-[ Kap depan mobil ]  [ Kabin/bak — area interaktif utama ]  [ bagian belakang ]
-   Ayah (kursi kemudi, walau tak dikontrol)
-   Ibu & Anak (di kabin/bak, posisi berubah sesuai tugas)
-[ UI resource bar di atas/bawah: Bahan Bakar, Makanan, Air, Bond Meter ]
-[ Panel upgrade (eksterior/interior) — akses via tombol/tab terpisah ]
-```
 
-Background jalan **scroll horizontal pelan & looping** — cukup 1–2 layer parallax (jalan + reruntuhan kota di kejauhan), tidak perlu variasi banyak di MVP.
+The road background scrolls slowly and loops horizontally. The MVP only needs one or two parallax layers: the road and distant ruined buildings.
 
 ---
 
-## 6. Sistem Inti
+## 6. Core Systems
 
-### 6.1 Resource (Idle Layer)
-| Resource | Fungsi | Berkurang/bertambah |
+### 6.1 Resources (Idle Layer)
+
+| Resource | Purpose | Change |
 |---|---|---|
-| Bahan Bakar | Mobil tetap jalan; habis = event darurat | Berkurang seiring waktu, terisi via generator/event |
-| Makanan & Air | Kondisi fisik karakter | Berkurang per hari, dikelola via generator |
-| Spare Parts | Currency utama upgrade mobil | Dihasilkan generator + event |
-| Jarak Tempuh | Progress/skor pasif | Bertambah otomatis seiring waktu (representasi "waktu bermain") |
+| Fuel | Keeps the vehicle moving; empty fuel triggers emergency events | Decreases over time; restored by generators and events |
+| Food and water | Represents the family's physical condition | Combined into Provisions for the MVP; decreases over time and is restored by generators |
+| Spare Parts | Main currency for vehicle upgrades and generator purchases | Produced by generators and events |
+| Distance | Passive progress and score | Increases automatically with time |
 
-### 6.1a Sistem Generator (ala AdVenture Capitalist)
+### 6.1a Generator System
 
-Referensi langsung: idle incremental klasik seperti *AdVenture Capitalist* — sejumlah "generator" yang masing-masing bisa dibeli berulang kali, harga naik tiap pembelian, dan langsung menghasilkan resource pasif per detik. **Tidak ada timer/cooldown** — begitu dibeli, produksinya langsung nambah dan terus jalan.
+Generators are repeatable purchases inspired by classic idle incrementals such as *AdVenture Capitalist*. Each generator has an increasing price and produces resources automatically through discrete production cycles. There is no manual collection and no separate manager system.
 
-**Daftar generator (tema keluarga & mobil, bukan bisnis):**
+**Generator roster**
 
-| Generator | Tema/Narasi | Resource dihasilkan |
-|---|---|---|
-| Toolkit Ayah | Perbaikan kecil sehari-hari | Spare Parts /detik |
-| Kaleng Makanan Cadangan | Stok darurat kelolaan Ibu | Makanan /detik |
-| Radio Genggam | Barter info dengan survivor lain | Spare Parts /detik |
-| Kebun Kecil di Bak | Tanam sayur darurat di mobil | Makanan /detik |
-| Alat Pemurni Air | Filter air darurat | Air /detik |
-| Baterai Cadangan | Sumber energi tambahan | Bahan Bakar /detik |
-| Genset Mini | Listrik tambahan | Bahan Bakar /detik |
-| Jaringan Barter Anak | Anak menjalin relasi via radio | Spare Parts /detik + sedikit Bond |
+| Generator | Theme | Resource | Base cycle | Output/cycle |
+|---|---|---|---:|---:|
+| Father's Toolkit | Small daily repairs | Spare Parts | 10 sec | 1 |
+| Emergency Cans | Mother's emergency stores | Provisions | 30 sec | 1 |
+| Hand Radio | Bartering information with survivors | Spare Parts | 2 min | 3 |
+| Truck-Bed Garden | Growing emergency vegetables | Provisions | 3 min | 3 |
+| Water Purifier | Filtering questionable water | Provisions | 5 min | 5 |
+| Backup Battery | Additional energy storage | Fuel | 10 min | 2 |
+| Mini Generator | Additional electricity | Fuel | 20 min | 5 |
+| Child's Barter Network | The child's radio relationships | Spare Parts | 1 hour | 20 |
 
-**Mekanik (per generator):**
-- Harga naik eksponensial tiap pembelian: `harga_berikutnya = harga_dasar × growth^jumlah_dimiliki` (growth disarankan 1.07–1.15, standar genre ini)
-- Produksi total generator = `jumlah_dimiliki × rate_dasar` per detik, langsung terakumulasi ke resource terkait
-- Tombol beli bertingkat: **x1 / x10 / x25 / xMax** (hitung total biaya untuk beli sekaligus banyak, umum di idle game agar tidak perlu klik berulang)
-- Tidak perlu sistem manager/auto-collect terpisah seperti game referensi — karena semua generator memang otomatis begitu dibeli, tidak ada siklus yang perlu "dikumpulkan manual"
+**Generator mechanics**
 
-**Relasi ke sistem lain:**
-- Generator = sumber income pasif terus-menerus (micro-progression)
-- Upgrade besar mobil (eksterior/interior, lihat 6.4) = milestone besar yang dibeli sesekali pakai hasil akumulasi generator (macro-progression)
-- Pola ini: banyak sumber kecil yang terus tumbuh → digunakan untuk lompatan besar sesekali — struktur inti genre idle/incremental
+- Price increases exponentially: `next_price = base_price * growth^owned`.
+- When a cycle completes, it produces `owned * output_per_cycle` of its resource.
+- Partial cycle progress is preserved across active ticks, tab closing, reloads, and offline processing.
+- Purchase quantities are **x1 / x10 / x25 / Next / xMax**. `Next` buys exactly enough units to reach the next milestone.
+- Milestones occur at **25 / 50 / 100 / 200**, then every 100 units.
+- Each reached milestone halves that generator's cycle duration. Milestones affect timing, not output per cycle, so their benefit is clear without multiplying the economy twice.
+
+**Relationship to other systems**
+
+- Generators provide continuous micro-progression through completed cycles.
+- Major exterior and interior vehicle upgrades are macro-progression purchased with accumulated generator income.
+- The intended pattern is many small sources that grow over time and fund occasional large jumps.
+
+### 6.1b Prestige System - Legacy
+
+When the vehicle breaks down beyond repair, or when the player chooses to reset, the family begins a new journey with a different vehicle. The family keeps the hard-earned wisdom of previous journeys as a permanent currency called **Legacy**.
+
+**Reset trigger:** The player may trigger a reset at any time. A deeper run should produce a more valuable reset.
+
+**Reset:**
+
+- All generator ownership and run-specific generator progression
+- Current resources
+- Exterior and interior vehicle upgrades
+- Character delegation/task assignments
+- Current-run production and relationship history
+
+**Persists:**
+
+- Unspent Legacy currency
+- Permanent meta-upgrades purchased with Legacy
+
+**Proposed reward formula:**
+
+```text
+Legacy earned = floor(sqrt(total spare parts generated during the run / threshold) * bond multiplier)
+```
+
+The threshold must be chosen after the cycle-based generator economy has been balanced. The bond multiplier should use the run's average Bond Meter, rewarding a family that stayed united rather than only optimizing resources.
+
+**Legacy spending:** Permanent upgrades may include global generator production bonuses, cycle-time reductions, or discounts on vehicle upgrades. These upgrades persist across future runs.
 
 ### 6.2 Bond Meter (Relationship Layer)
-- Tiap pasang karakter (Ayah-Ibu, Ayah-Anak, Ibu-Anak) punya nilai bond terpisah, atau disederhanakan jadi 1 nilai "family bond" gabungan untuk MVP
-- Naik lewat interaksi (ngobrol, hibur, momen malam wajib)
-- Turun otomatis pelan-pelan kalau diabaikan, atau turun tajam dari trade-off kerja berlebih
-- Bond rendah → efisiensi kerja karakter terkait turun (buff negatif), bukan game over — konsekuensi bersifat gradual
 
-### 6.3 Peran Karakter
-| Karakter | Fungsi Idle |
+- Each pair of characters may eventually have a separate value, but the MVP uses one combined family bond from 0 to 100.
+- Bond increases through interaction, comfort, and required night-family moments.
+- Bond gradually decreases when ignored and can drop sharply through overwork trade-offs.
+- Low bond reduces related work efficiency as a gradual penalty; it is not an immediate game over.
+
+### 6.3 Character Roles
+
+| Character | Idle function |
 |---|---|
-| Ayah | Efisiensi mengemudi/perbaikan → pengaruh konsumsi bahan bakar & kecepatan perbaikan darurat |
-| Ibu | Konversi resource mentah → makanan/obat, crafting sederhana |
-| Anak | Bond generator utama; juga bisa "membantu" dengan efisiensi rendah tapi risiko capek lebih cepat |
+| Father | Driving and repair efficiency; affects fuel consumption and emergency repair speed |
+| Mother | Converts raw resources into provisions/medicine and handles simple crafting |
+| Child | Main bond generator; can help with low efficiency but becomes tired faster |
 
-### 6.4 Upgrade Mobil (Dua Jalur)
-**Eksterior** (proteksi & kapasitas):
-1. Pickup terbuka (start)
-2. Terpal/kanvas darurat
-3. Container/van tertutup penuh
+### 6.4 Vehicle Upgrades (Two Paths)
 
-**Interior** (efisiensi & kenyamanan):
-1. Darurat (matras, kompor portable)
-2. Semi-layak (kasur, dapur mini)
-3. Nyaman (sekat ruang, radio jernih, penyimpanan rapi)
+**Exterior: protection and capacity**
 
-Kedua jalur independen — pemain bisa pilih prioritas mana dulu, menciptakan build/strategi berbeda tiap playthrough.
+1. Open pickup (starting tier)
+2. Emergency tarp/canvas
+3. Fully enclosed container/van
+
+**Interior: efficiency and comfort**
+
+1. Emergency setup: mattress and portable stove
+2. Semi-livable: bed and mini kitchen
+3. Comfortable: divider, clear radio, and organized storage
+
+The two paths are independent. Players can prioritize either path and create different strategies across runs.
 
 ### 6.5 Event System
-- Muncul berkala (interval waktu atau trigger dari kondisi resource/eksterior)
-- Berbentuk dialog/pilihan singkat (2–3 opsi), auto-resolve — tidak ada mini-game atau kontrol manual
-- Frekuensi & tingkat bahaya event dipengaruhi status eksterior mobil (bak terbuka = lebih sering/berisiko)
 
-### 6.6 Siklus Hari
-- **Pagi:** assign tugas tiap karakter
-- **Siang–sore:** event acak muncul, resource berjalan (real-time atau dipercepat/skip)
-- **Malam:** momen keluarga wajib (pilihan dialog/aktivitas bareng) — sumber utama bond
+- Events appear periodically or when resource and exterior conditions trigger them.
+- Each event is a short dialogue choice with two or three options. There are no minigames or manual controls.
+- Event frequency and danger are influenced by the exterior vehicle state; an open pickup is more exposed and risky.
 
----
+### 6.6 Day Cycle
 
-## 7. Progression & Akhir Permainan
-
-Bukan "menang/kalah" biner, tapi kombinasi hasil di akhir sejumlah hari (atau mode endless dengan skor jarak tempuh):
-
-- **Full Survivor:** mobil ter-upgrade penuh, bond tinggi
-- **Barely Making It:** bertahan tapi resource/mobil minim
-- **Broken but Alive:** fisik selamat, bond keluarga rendah
-- **Mode Endless (opsional):** tanpa ending tetap, skor = jarak tempuh + rata-rata bond, cocok untuk elemen incremental/replay
+- **Morning:** Assign tasks to each character.
+- **Day and afternoon:** Events appear while resources and generator cycles continue.
+- **Night:** An automatic family ritual provides the main active source of bond.
 
 ---
 
-## 8. Scope MVP (Rekomendasi Tahap Awal)
+## 7. Progression and End States
 
-Agar tidak overscope, MVP sebaiknya hanya mencakup:
-1. Scene statis + background scroll sederhana (belum perlu banyak variasi)
-2. 3 resource dasar (Bahan Bakar, Makanan/Air digabung, Spare Parts) + 1 Bond meter gabungan
-3. Assign tugas harian (tanpa banyak sub-menu)
-4. 5–8 event dialog dasar untuk divalidasi looping-nya
-5. 1 jalur upgrade dulu (eksterior saja: 3 tahap pickup → terpal → van) sebelum menambah interior
-6. Placeholder visual (bentuk geometris) sebelum masuk aset final
+The game is not a binary win/loss experience. Outcomes combine survival and relationship results after a number of days, or continue indefinitely in endless mode:
 
-Setelah loop ini terasa "enak", baru ekspansi ke: jalur interior, lebih banyak event, ekspresi karakter, dan aset visual final.
+- **Full Survivor:** Fully upgraded vehicle and high bond.
+- **Barely Making It:** The family survives with minimal resources and vehicle progress.
+- **Broken but Alive:** The family survives physically but has low family bond.
+- **Endless mode (optional):** No fixed ending; score combines distance and average bond.
 
 ---
 
-## 9. Sistem Waktu, Upgrade, & Offline Progress (Finalized)
+## 8. MVP Scope
 
-### 9.1 Upgrade Instan
-Pembelian upgrade (eksterior maupun interior) **langsung resolve** saat dibeli — tidak ada bar progres/waktu tunggu. Yang tetap berbasis waktu hanyalah **generasi resource** dan **siklus hari**, bukan aksi upgrade itu sendiri.
+To avoid overscoping, the MVP includes:
 
-### 9.2 Siklus Waktu
-- Resource (Bahan Bakar, Makanan/Air, Spare Parts) **mengalir otomatis secara real-time** selama game terbuka (contoh: +N spare parts/menit), bukan per-klik manual
-- 1 hari in-game = interval waktu nyata tetap (contoh awal: 3–5 menit real-time) — maju otomatis, tidak perlu tombol "skip hari"
-- **Momen malam (ritual keluarga)** muncul otomatis sebagai popup setiap pergantian hari; pemain merespon pilihan dialog kapan pun siap, tidak memblokir waktu
-- Pemain hanya perlu assign tugas karakter sesekali (bisa diubah kapan saja, tidak terikat waktu pagi/sore secara ketat)
+1. One static scene with simple scrolling background.
+2. Three resource groups: Fuel, Provisions, and Spare Parts, plus one combined Bond meter.
+3. Assignable character tasks without deep submenus.
+4. Five to eight dialogue events to validate the loop.
+5. One upgrade path first: exterior, with three stages from pickup to tarp to van.
+6. Geometric placeholder visuals before final art.
+7. Cycle-based generator production with persisted partial progress.
+
+After the loop feels good, expand to the interior path, more events, character expressions, final assets, and Legacy prestige.
+
+---
+
+## 9. Time, Upgrades, and Offline Progress (Finalized)
+
+### 9.1 Instant Upgrades
+
+Exterior and interior purchases resolve immediately. There is no construction bar or wait timer. Resource generation, generator cycles, and the day cycle are time-based; upgrades are not.
+
+### 9.2 Time Cycle
+
+- Resources update automatically while the game is open through completed generator cycles and consumption.
+- One in-game day is a fixed real-time interval, initially 3-5 minutes.
+- A night ritual appears automatically at each day boundary. The player can answer it later and the game does not pause.
+- Character assignments can be changed at any time.
 
 ### 9.3 Offline Progress
-- Simpan `lastSeenTimestamp` di localStorage setiap kali state disimpan/ditutup
-- Saat game dibuka kembali: hitung `deltaWaktu = sekarang - lastSeenTimestamp`
-- Resource offline dihitung sebagai: `deltaWaktu × rate_passive × offline_multiplier`, dengan:
-  - **offline_multiplier**: disarankan 50–70% dari rate aktif (idle saat game terbuka tetap lebih optimal, memberi insentif main aktif)
-  - **cap maksimum**: disarankan 8–12 jam offline dihitung, sisanya diabaikan (mencegah exploit "tinggal game seminggu")
-- **Bond meter tidak naik saat offline** (butuh interaksi aktif), namun juga tidak turun drastis — cukup stagnan atau menurun sangat lambat
-- Saat kembali, tampilkan ringkasan singkat ("Selama kamu pergi: +120 Spare Parts, +40 Bahan Bakar") sebagai payoff standar idle game
 
-### 9.4 Ending & Variasi Akhir
-Untuk solo development, hindari branching ending naratif kompleks di tahap awal:
-- **MVP:** mode endless dengan **"report card"** yang bisa dicek kapan saja — gabungan skor dari jarak tempuh, level upgrade mobil, dan rata-rata bond meter
-- **Pengembangan lanjutan (opsional, bukan prioritas MVP):** 2–3 tier deskriptif berdasarkan kombinasi angka akhir (mis. Full Survivor / Barely Making It / Broken but Alive), ditampilkan sebagai ringkasan teks, bukan cutscene terpisah
+- Save `lastSeenTimestamp` in localStorage whenever state is saved or the page is closed.
+- On return, calculate `delta_time = now - lastSeenTimestamp`.
+- Resolve generator cycles using 60% effective offline time, preserving each generator's partial cycle progress.
+- Apply the recommended offline cap of 10 hours; excess time is ignored.
+- Bond does not increase offline and remains stable rather than suffering a large decay.
+- Show a short return summary such as `While you were away: +120 Spare Parts, +40 Fuel`.
+
+### 9.4 Endings and Variations
+
+For solo development, avoid complex branching narrative endings early:
+
+- **MVP:** Endless mode with a report card combining distance, vehicle upgrade level, and bond.
+- **Later:** Two or three descriptive tiers based on final numbers, shown as text rather than separate cutscenes.
+- **Later:** Legacy prestige resets and permanent meta-upgrades after the cycle economy has been balanced.

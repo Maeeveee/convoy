@@ -47,7 +47,7 @@ export function createInitialState(now = Date.now()): GameState {
       child: { id: "child", task: "connect", energy: 100 },
     },
     generators: Object.fromEntries(
-      Object.keys(GENERATORS).map((id) => [id, { id, owned: 0 }]),
+      Object.keys(GENERATORS).map((id) => [id, { id, owned: 0, cycleProgressSeconds: 0 }]),
     ) as GameState["generators"],
     exterior: { level: 1, id: EXTERIOR_BY_LEVEL[0] },
     bond: 62,

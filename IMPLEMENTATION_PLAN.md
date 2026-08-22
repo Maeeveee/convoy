@@ -7,7 +7,7 @@ Build the MVP described in `PROJECT.md`: a browser-based family survival idle ga
 The MVP is complete when a player can:
 
 - Open the game and understand the current family, vehicle, resources, bond, day, and distance.
-- Leave the game open and see passive production and consumption continue in real time.
+- Leave the game open and see generator cycles, production, and consumption continue in real time.
 - Assign one task to each family member and change assignments at any time.
 - Buy repeatable generators using spare parts and purchase x1, x10, x25, Next milestone, or xMax quantities.
 - Respond to random events with two or three choices and see their consequences.
@@ -29,12 +29,14 @@ These decisions keep the first release aligned with the design document and avoi
 | Resources | Fuel, provisions (food and water combined), spare parts, distance, bond |
 | Relationship | One combined family bond value from 0 to 100 |
 | Time | Configurable real-time day duration, initially 5 minutes |
-| Offline progress | 60% active passive rate, capped at 10 hours; bond does not gain offline |
+| Offline progress | 60% effective cycle time, capped at 10 hours; bond does not gain offline |
 | Events | 5–8 authored events, one active event at a time |
 | Vehicle progression | Exterior path only; three tiers, instant purchases |
 | Visual assets | Geometric placeholders first; final assets are a later phase |
 | End state | Endless mode plus report card; narrative endings are post-MVP |
-| Generator milestones | At 25, 50, 100, 200, then every 100 units; each reached milestone doubles that generator's production |
+| Generator milestones | At 25, 50, 100, 200, then every 100 units; each reached milestone halves that generator's cycle time |
+| Generator production | Discrete cycles with per-generator base duration and output; partial progress persists |
+| Prestige | Legacy is designed but deferred until the cycle economy is balanced |
 
 ## 3. Proposed Project Structure
 
@@ -81,7 +83,7 @@ hooks/
 - Define TypeScript types for resources, characters, tasks, generators, upgrades, events, time state, and save data.
 - Define invariants: resources cannot become negative, bond stays within 0–100, upgrade levels are monotonic, and timestamps are valid.
 - Define the simulation clock as elapsed seconds, not render frames.
-- Define formulas for passive production, consumption, distance, bond decay, event effects, generator pricing, and upgrade costs.
+- Define formulas for cycle production, partial cycle progress, consumption, distance, bond decay, event effects, generator pricing, and upgrade costs.
 - Define initial state and a version number for persisted saves.
 
 **Deliverables:**
@@ -103,7 +105,7 @@ hooks/
 
 - Add Zustand and create the game store around the typed state model.
 - Implement a simulation action that accepts elapsed seconds and applies:
-  - generator production;
+  - completed generator cycles and partial cycle progress;
   - fuel and provisions consumption;
   - distance gain;
   - gradual bond decay;
@@ -111,7 +113,8 @@ hooks/
 - Clamp elapsed time per active tick to prevent large browser-throttling jumps from corrupting state.
 - Implement task assignment for Ayah, Ibu, and Anak.
 - Implement generator ownership, next-price calculation, and bulk purchase quantities x1/x10/x25/Next milestone/xMax.
-- Implement generator milestones at 25, 50, 100, 200, then every 100 units; each milestone doubles that generator's production rate.
+- Implement generator milestones at 25, 50, 100, 200, then every 100 units; each milestone halves that generator's cycle time.
+- Use cycle durations from seconds to minutes and hours by generator tier, with integer output per completed cycle.
 - Implement instant exterior upgrades and their effects on capacity, event risk, or efficiency.
 - Keep all actions deterministic and return explicit success/failure results for UI feedback.
 
@@ -124,7 +127,7 @@ hooks/
 **Exit criteria:**
 
 - A test can advance the game by any chosen number of seconds and assert exact state changes.
-- Buying a generator immediately changes the passive rate.
+- Buying a generator immediately changes its future cycle output and/or cycle timing.
 - Upgrades resolve immediately and cannot be purchased without enough spare parts.
 
 ### Phase 2: Persistence and Offline Progress
@@ -136,8 +139,8 @@ hooks/
 - Add a versioned `localStorage` save format with `lastSeenTimestamp`.
 - Save on meaningful state changes and at a bounded interval; save again on page visibility changes and unload where supported.
 - Validate and sanitize loaded data. If a save is invalid or from an unsupported version, fall back to a fresh game rather than crashing.
-- Calculate offline elapsed time using the 10-hour cap and 60% multiplier.
-- Apply offline resource production and distance while preventing offline bond gains and excessive bond loss.
+- Calculate offline elapsed time using the 10-hour cap and 60% effective production-time multiplier.
+- Resolve completed generator cycles offline, preserve partial cycle progress, and prevent offline bond gains or excessive bond loss.
 - Return a structured offline summary for the UI.
 - Add a reset-save action for development and QA.
 
@@ -196,6 +199,7 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 - Implement automatic day rollover and queue a night-family moment once per day.
 - Add two or three night choices that primarily affect bond and may trade against resources or efficiency.
 - Implement report-card calculations from distance, exterior upgrade level, and average/current bond.
+- Define the Legacy economy after cycle balancing: total run production, threshold, average-bond multiplier, reset state, and permanent upgrade costs.
 
 **Deliverables:**
 
@@ -235,12 +239,15 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 - A fresh save and a returning save both support the complete MVP loop.
 - `npm run lint`, `npm run typecheck`, and `npm run build` pass.
 
-### Phase 6: Post-MVP Expansion
+### Phase 6: Legacy Prestige and Post-MVP Expansion
 
-**Purpose:** Expand content only after the core loop has been validated.
+**Purpose:** Add the permanent Legacy meta-progression after the cycle-based economy has been measured and balanced, then expand content.
 
 **Candidate work, in priority order:**
 
+- Add Legacy reset at player choice or vehicle failure.
+- Track total run production and average bond for Legacy rewards.
+- Add persistent Legacy currency and permanent upgrades such as global production bonuses and upgrade discounts.
 - Add the independent interior upgrade path.
 - Split food and water if the combined provisions resource is no longer expressive enough.
 - Add pair-specific bond values after validating the single bond meter.
@@ -256,20 +263,24 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 
 ## 5. Core Rules to Implement
 
-### Resource Tick
+### Resource and Cycle Simulation
 
 For each simulation interval:
 
 ```text
-production = sum(generator.owned * generator.ratePerSecond)
+cycleDuration = baseCycleDuration / milestoneTimeMultiplier
+cycleProgressNext = cycleProgressCurrent + elapsedSeconds
+completedCycles = floor(cycleProgressNext / cycleDuration)
+cycleProgressRemainder = cycleProgressNext % cycleDuration
+production = completedCycles * owned * outputPerCycle
 modifiedProduction = production * characterTaskModifiers * bondModifiers
 consumption = baseConsumption * elapsedSeconds
-resourceNext = clamp(resourceCurrent + modifiedProduction * elapsedSeconds - consumption, 0, capacity)
+resourceNext = clamp(resourceCurrent + modifiedProduction - consumption, 0, capacity)
 distanceNext = distanceCurrent + effectiveTravelRate * elapsedSeconds
 bondNext = clamp(bondCurrent + bondDelta * elapsedSeconds, 0, 100)
 ```
 
-The implementation should use floating-point values internally and format values for display. It should not depend on a fixed render frame rate.
+The implementation should use floating-point values internally and format values for display. It should not depend on a fixed render frame rate. Offline processing uses `elapsedSeconds * offlineMultiplier` as effective generator-cycle time while applying normal consumption and preserving the remainder.
 
 ### Generator Pricing
 
@@ -284,7 +295,8 @@ bulkPrice(quantity) = sum(price for each purchase in the quantity)
 
 ```text
 offlineSeconds = min(max(now - lastSeenTimestamp, 0), 10 hours)
-offlineGain = offlineSeconds * activePassiveRate * 0.60
+effectiveCycleTime = offlineSeconds * 0.60
+offlineGain = completedCycles(effectiveCycleTime) * owned * outputPerCycle
 ```
 
 Offline processing must be idempotent: loading the same saved state twice must not award the same offline gain twice.
@@ -295,6 +307,7 @@ Offline processing must be idempotent: loading the same saved state twice must n
 - Test boundary values: zero resources, full capacity, bond 0 and 100, no affordable purchase, maximum affordable purchase, and day rollover exactly at the boundary.
 - Test persistence with missing, malformed, old-version, future-version, and valid saves.
 - Test offline caps and negative/invalid system-clock deltas.
+- Test cycle completion, partial cycle remainder, milestone cycle halving, and long-duration offline cycle resolution.
 - Test event choices as deterministic state transitions.
 - Manually smoke-test a fresh browser profile, reload, close/reopen, mobile layout, keyboard navigation, and dark/light theme behavior.
 - Run `npm run lint`, `npm run typecheck`, and `npm run build` at the end of every major phase from Phase 1 onward.

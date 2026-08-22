@@ -64,7 +64,11 @@ describe("persistence", () => {
       ...initial,
       generators: {
         ...initial.generators,
-        fatherToolkit: { id: "fatherToolkit" as const, owned: 1 },
+        fatherToolkit: {
+          id: "fatherToolkit" as const,
+          owned: 1,
+          cycleProgressSeconds: 0,
+        },
       },
     }
     const result = applyOfflineProgress(withGenerator, 12 * 60 * 60 * 1_000)

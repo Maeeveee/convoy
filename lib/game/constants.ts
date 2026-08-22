@@ -46,7 +46,8 @@ export const GENERATORS: Record<
     label: string
     description: string
     resource: "fuel" | "provisions" | "spareParts"
-    ratePerSecond: number
+    cycleSeconds: number
+    outputPerCycle: number
     basePrice: number
     growth: number
   }
@@ -55,7 +56,8 @@ export const GENERATORS: Record<
     label: "Father's toolkit",
     description: "Small repairs become a steady parts trickle.",
     resource: "spareParts",
-    ratePerSecond: 0.12,
+    cycleSeconds: 10,
+    outputPerCycle: 1,
     basePrice: 30,
     growth: 1.12,
   },
@@ -63,7 +65,8 @@ export const GENERATORS: Record<
     label: "Emergency cans",
     description: "Mother keeps a reserve ready for lean days.",
     resource: "provisions",
-    ratePerSecond: 0.08,
+    cycleSeconds: 30,
+    outputPerCycle: 1,
     basePrice: 45,
     growth: 1.13,
   },
@@ -71,7 +74,8 @@ export const GENERATORS: Record<
     label: "Hand radio",
     description: "Information opens better barter routes.",
     resource: "spareParts",
-    ratePerSecond: 0.2,
+    cycleSeconds: 120,
+    outputPerCycle: 3,
     basePrice: 160,
     growth: 1.14,
   },
@@ -79,7 +83,8 @@ export const GENERATORS: Record<
     label: "Truck-bed garden",
     description: "A little green life follows the family.",
     resource: "provisions",
-    ratePerSecond: 0.16,
+    cycleSeconds: 180,
+    outputPerCycle: 3,
     basePrice: 220,
     growth: 1.14,
   },
@@ -87,7 +92,8 @@ export const GENERATORS: Record<
     label: "Water purifier",
     description: "Turns questionable finds into usable stores.",
     resource: "provisions",
-    ratePerSecond: 0.22,
+    cycleSeconds: 300,
+    outputPerCycle: 5,
     basePrice: 400,
     growth: 1.15,
   },
@@ -95,7 +101,8 @@ export const GENERATORS: Record<
     label: "Backup battery",
     description: "Keeps the old systems running longer.",
     resource: "fuel",
-    ratePerSecond: 0.05,
+    cycleSeconds: 600,
+    outputPerCycle: 2,
     basePrice: 600,
     growth: 1.15,
   },
@@ -103,7 +110,8 @@ export const GENERATORS: Record<
     label: "Mini generator",
     description: "A noisy but dependable power source.",
     resource: "fuel",
-    ratePerSecond: 0.11,
+    cycleSeconds: 1_200,
+    outputPerCycle: 5,
     basePrice: 1_200,
     growth: 1.15,
   },
@@ -111,7 +119,8 @@ export const GENERATORS: Record<
     label: "Child's barter network",
     description: "A growing web of voices and favors.",
     resource: "spareParts",
-    ratePerSecond: 0.35,
+    cycleSeconds: 3_600,
+    outputPerCycle: 20,
     basePrice: 2_500,
     growth: 1.15,
   },

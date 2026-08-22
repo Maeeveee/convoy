@@ -27,6 +27,7 @@ export type CharacterState = {
 export type GeneratorState = {
   id: GeneratorId
   owned: number
+  cycleProgressSeconds: number
 }
 
 export type ExteriorState = {

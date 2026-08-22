@@ -1,15 +1,13 @@
 import {
   CHARACTER_IDS,
-  BASE_CONSUMPTION_PER_SECOND,
   EXTERIOR_BY_LEVEL,
   GENERATORS,
   INITIAL_CAPACITIES,
-  DAY_DURATION_SECONDS,
   MAX_OFFLINE_SECONDS,
   OFFLINE_MULTIPLIER,
   SAVE_VERSION,
 } from "./constants"
-import { getPassiveRates } from "./simulation"
+import { simulateElapsed } from "./simulation"
 import { createInitialState } from "./store"
 import type {
   GeneratorId,
@@ -76,7 +74,9 @@ function isValidSave(value: unknown): value is PersistedGameState {
         !generator ||
         generator.id !== id ||
         !Number.isInteger(generator.owned) ||
-        generator.owned < 0
+        generator.owned < 0 ||
+        !isFiniteNumber(generator.cycleProgressSeconds) ||
+        generator.cycleProgressSeconds < 0
       )
     })
   ) {
@@ -165,39 +165,21 @@ export function applyOfflineProgress(
     }
   }
 
-  const rates = getPassiveRates(state)
   const multiplier = OFFLINE_MULTIPLIER
-  const fuelGained =
-    (rates.fuel * multiplier - BASE_CONSUMPTION_PER_SECOND.fuel) *
-    offlineSeconds
-  const provisionsGained =
-    (rates.provisions * multiplier - BASE_CONSUMPTION_PER_SECOND.provisions) *
-    offlineSeconds
-  const sparePartsGained = rates.spareParts * offlineSeconds * multiplier
-  const distanceGained = offlineSeconds * 0.08 * multiplier * (state.resources.fuel > 0 ? 1 : 0.15)
+  const progressed = simulateElapsed(
+    state,
+    offlineSeconds,
+    offlineSeconds * multiplier,
+    now,
+  )
+  const resolvedState = { ...progressed, bond: state.bond }
+  const fuelGained = resolvedState.resources.fuel - state.resources.fuel
+  const provisionsGained = resolvedState.resources.provisions - state.resources.provisions
+  const sparePartsGained = resolvedState.resources.spareParts - state.resources.spareParts
+  const distanceGained = resolvedState.distance - state.distance
 
   return {
-    state: {
-      ...state,
-      resources: {
-        fuel: Math.max(
-          Math.min(state.resources.fuel + fuelGained, state.capacities.fuel),
-          0,
-        ),
-        provisions: Math.min(
-          Math.max(state.resources.provisions + provisionsGained, 0),
-          state.capacities.provisions,
-        ),
-        spareParts: state.resources.spareParts + sparePartsGained,
-      },
-      distance: state.distance + distanceGained,
-      elapsedSeconds: state.elapsedSeconds + offlineSeconds,
-      day:
-        Math.floor(
-          (state.elapsedSeconds + offlineSeconds) / DAY_DURATION_SECONDS,
-        ) + 1,
-      lastSeenTimestamp: now,
-    },
+    state: resolvedState,
     summary: {
       offlineSeconds,
       fuelGained,
