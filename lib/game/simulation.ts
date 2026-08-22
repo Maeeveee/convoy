@@ -21,16 +21,11 @@ function taskModifiers(state: GameState) {
   }
 }
 
-function bondModifier(state: GameState) {
-  return 0.7 + state.bond / 333
-}
-
 export function creditCycleMultiplier(state: GameState) {
   return (
     (state.characters.father.task === "repair" ? 1.35 : 1) *
     (state.characters.mother.task === "trade" ? 1.4 : 1) *
-    (state.characters.child.task === "connect" ? 1.1 : 1) *
-    bondModifier(state)
+    (state.characters.child.task === "connect" ? 1.1 : 1)
   )
 }
 
@@ -51,7 +46,7 @@ export function getPassiveRates(state: GameState) {
   ][]) {
     const definition = GENERATORS[id]
     const rate = (generator.owned * definition.outputPerCycle) / generatorCycleSeconds(id, generator.owned)
-    rates.credits += rate * modifiers.credits * bondModifier(state)
+    rates.credits += rate * modifiers.credits
   }
 
   return {

@@ -8,6 +8,7 @@ import {
   SAVE_VERSION,
 } from "./constants"
 import { simulateElapsed } from "./simulation"
+import { eventById } from "./events"
 import { createInitialState } from "./store"
 import type {
   GeneratorId,
@@ -36,6 +37,12 @@ function isValidSave(value: unknown): value is PersistedGameState {
   if (!isFiniteNumber(save.lastSeenTimestamp) || save.lastSeenTimestamp < 0) {
     return false
   }
+  if (!isFiniteNumber(save.eventTimerSeconds) || save.eventTimerSeconds < 0) return false
+  if (
+    save.pendingEvent !== null &&
+    (typeof save.pendingEvent !== "string" || !eventById(save.pendingEvent))
+  ) return false
+  if (save.pendingNightDay !== null && (!isFiniteNumber(save.pendingNightDay) || save.pendingNightDay < 1)) return false
   if (!save.resources || !save.characters || !save.generators || !save.exterior) {
     return false
   }
@@ -109,6 +116,9 @@ export function toPersistedState(state: GameState): PersistedGameState {
     elapsedSeconds: state.elapsedSeconds,
     day: state.day,
     lastSeenTimestamp: state.lastSeenTimestamp,
+    eventTimerSeconds: state.eventTimerSeconds,
+    pendingEvent: state.pendingEvent,
+    pendingNightDay: state.pendingNightDay,
   }
 }
 

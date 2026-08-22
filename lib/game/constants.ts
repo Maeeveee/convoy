@@ -5,7 +5,7 @@ import type {
   TaskId,
 } from "./types"
 
-export const SAVE_VERSION = 2
+export const SAVE_VERSION = 3
 export const DAY_DURATION_SECONDS = 5 * 60
 export const MAX_ACTIVE_TICK_SECONDS = 10
 export const MAX_OFFLINE_SECONDS = 10 * 60 * 60

@@ -21,6 +21,8 @@ import { OfflineSummaryDialog } from "./offline-summary"
 import { TaskPanel } from "./task-panel"
 import { UpgradePanel } from "./upgrade-panel"
 import { FuelPanel } from "./fuel-panel"
+import { DecisionDialogs } from "./decision-dialogs"
+import { ReportCard } from "./report-card"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 
@@ -123,11 +125,13 @@ export function GameShell() {
             <FuelPanel />
             <TaskPanel />
             <UpgradePanel />
+            <ReportCard />
           </aside>
         </div>
       </div>
 
       <OfflineSummaryDialog />
+      <DecisionDialogs />
 
       {confirmReset && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4" role="presentation">

@@ -125,6 +125,7 @@ Generators are repeatable purchases inspired by classic idle incrementals such a
 - Purchase quantities are **x1 / x10 / x25 / Next / xMax**. `Next` buys exactly enough units to reach the next milestone.
 - Milestones occur at **25 / 50 / 100 / 200**, then every 100 units.
 - Each reached milestone halves that generator's cycle duration. Milestones affect timing, not output per cycle, so their benefit is clear without multiplying the economy twice.
+- The card shows two independent indicators: smooth current-cycle progress with a live countdown, and ownership progress toward the next milestone.
 - The starting state is 150 Trade Credits and 60/100 Fuel, allowing an immediate first purchase.
 - Early generator purchases target a payback period of roughly 30-90 seconds before task and bond modifiers.
 
@@ -165,7 +166,7 @@ When the vehicle breaks down beyond repair, or when the player chooses to reset,
 Legacy earned = floor(sqrt(total Trade Credits generated during the run / threshold) * bond multiplier)
 ```
 
-The threshold must be chosen after the cycle-based generator economy has been balanced. The bond multiplier should use the run's average Bond Meter, rewarding a family that stayed united rather than only optimizing resources.
+The threshold must be chosen after the cycle-based generator economy has been balanced. The Legacy bond multiplier should use the run's average Bond Meter, rewarding a family that stayed united rather than only optimizing resources. Live Bond does not continuously alter generator cycle payouts; generator output stays stable until ownership, milestones, or task assignments change.
 
 **Legacy spending:** Permanent upgrades may include global generator production bonuses, cycle-time reductions, or discounts on vehicle upgrades. These upgrades persist across future runs.
 
@@ -202,7 +203,7 @@ The two paths are independent. Players can prioritize either path and create dif
 
 ### 6.5 Event System
 
-- Events appear periodically or when resource and exterior conditions trigger them.
+- Events appear slowly on a three-minute baseline or react to conditions such as low Fuel, an exposed open pickup, or low Bond. Reactive events have a cooldown so a single condition cannot spam the player.
 - Each event is a short dialogue choice with two or three options. There are no minigames or manual controls.
 - Event frequency and danger are influenced by the exterior vehicle state; an open pickup is more exposed and risky.
 

@@ -197,7 +197,7 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 **Work items:**
 
 - Author 5–8 MVP events with clear prerequisites, choices, costs, and rewards.
-- Implement event scheduling based on elapsed time and relevant conditions such as low fuel or open exterior.
+- Implement slower event scheduling with a three-minute baseline, a 45-second reactive cooldown, and condition triggers for low Fuel, open pickup exposure, and low Bond.
 - Prevent duplicate active events and define what happens when an event is pending during a reload.
 - Implement event choices as atomic state transitions with a result message.
 - Implement automatic day rollover and queue a night-family moment once per day.
@@ -210,6 +210,10 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 - Event and night-moment content definitions.
 - Event dialog, result feedback, and report-card UI.
 - Tests for event prerequisites, one-time resolution, day rollover, and report-card tiers.
+
+Phase 4 uses six authored road events, one queued night ritual per crossed day, and save version 3 for pending event/night decisions.
+
+Generator cards use a 100 ms visual animation layer for smooth progress, while the economy remains discrete and only awards credits when a full cycle completes. Each card shows the live time remaining and a separate progress bar toward its next ownership milestone. Live Bond changes do not alter generator payout amounts, preventing income from drifting without a purchase or task change.
 
 **Exit criteria:**
 

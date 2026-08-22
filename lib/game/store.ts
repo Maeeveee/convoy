@@ -11,6 +11,7 @@ import {
 } from "./constants"
 import { bulkGeneratorPrice, resolvePurchaseQuantity } from "./generators"
 import { buyExteriorUpgrade } from "./progression"
+import { chooseEvent, eventById, EVENT_COOLDOWN_SECONDS, EVENT_INTERVAL_SECONDS, NIGHT_CHOICES } from "./events"
 import { simulate } from "./simulation"
 import type {
   ActionResult,
@@ -35,6 +36,8 @@ export type GameStore = GameState & {
   ) => ActionResult
   buyExterior: (target: "emergencyTarp" | "enclosedVan") => ActionResult
   buyFuel: (amount: number) => ActionResult
+  resolveEvent: (choiceId: string) => ActionResult
+  resolveNight: (choiceId: string) => ActionResult
   reset: () => void
 }
 
@@ -57,6 +60,9 @@ export function createInitialState(now = Date.now()): GameState {
     elapsedSeconds: 0,
     day: 1,
     lastSeenTimestamp: now,
+    eventTimerSeconds: 0,
+    pendingEvent: null,
+    pendingNightDay: null,
   }
 }
 
@@ -64,7 +70,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(),
   isHydrated: false,
   offlineSummary: null,
-  tick: (elapsedSeconds) => set((state) => simulate(state, elapsedSeconds)),
+  tick: (elapsedSeconds) =>
+    set((state) => {
+      const next = simulate(state, elapsedSeconds)
+      const crossedDay = next.day > state.day
+      const timer = state.eventTimerSeconds + elapsedSeconds
+      const trigger =
+        next.resources.fuel <= 20
+          ? "lowFuel"
+          : next.exterior.level === 1 && timer >= 120
+            ? "openPickup"
+            : next.bond <= 35
+              ? "lowBond"
+              : "scheduled"
+      const shouldEvent =
+        !state.pendingEvent &&
+        !state.pendingNightDay &&
+        timer >= EVENT_INTERVAL_SECONDS ||
+        (trigger !== "scheduled" && timer >= EVENT_COOLDOWN_SECONDS)
+      return {
+        ...next,
+        eventTimerSeconds: shouldEvent ? 0 : timer,
+        pendingEvent: shouldEvent ? chooseEvent(next, trigger).id : state.pendingEvent,
+        pendingNightDay: crossedDay ? next.day : state.pendingNightDay,
+      }
+    }),
   hydrate: (state, summary) =>
     set({
       ...state,
@@ -139,6 +169,39 @@ export const useGameStore = create<GameStore>((set, get) => ({
       lastSeenTimestamp: Date.now(),
     })
     return { ok: true, amount: fuel }
+  },
+  resolveEvent: (choiceId) => {
+    const state = get()
+    if (!state.pendingEvent) return { ok: false, reason: "No event is waiting." }
+    const event = eventById(state.pendingEvent)
+    const choice = event?.choices.find((item) => item.id === choiceId)
+    if (!choice) return { ok: false, reason: "That event choice is unavailable." }
+    set({
+      resources: {
+        fuel: Math.max(Math.min(state.resources.fuel + (choice.fuel ?? 0), state.capacities.fuel), 0),
+        credits: Math.max(state.resources.credits + (choice.credits ?? 0), 0),
+      },
+      bond: Math.min(Math.max(state.bond + (choice.bond ?? 0), 0), 100),
+      pendingEvent: null,
+      lastSeenTimestamp: Date.now(),
+    })
+    return { ok: true }
+  },
+  resolveNight: (choiceId) => {
+    const state = get()
+    if (!state.pendingNightDay) return { ok: false, reason: "No family moment is waiting." }
+    const choice = NIGHT_CHOICES.find((item) => item.id === choiceId)
+    if (!choice) return { ok: false, reason: "That family choice is unavailable." }
+    set({
+      resources: {
+        fuel: Math.max(Math.min(state.resources.fuel + (choice.fuel ?? 0), state.capacities.fuel), 0),
+        credits: Math.max(state.resources.credits + (choice.credits ?? 0), 0),
+      },
+      bond: Math.min(Math.max(state.bond + (choice.bond ?? 0), 0), 100),
+      pendingNightDay: null,
+      lastSeenTimestamp: Date.now(),
+    })
+    return { ok: true }
   },
   reset: () =>
     set({ ...createInitialState(), isHydrated: true, offlineSummary: null }),

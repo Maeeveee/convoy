@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Cog, TimerReset } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,12 @@ export function GeneratorPanel() {
   const state = useGameStore()
   const [quantity, setQuantity] = useState<PurchaseQuantity>(1)
   const [message, setMessage] = useState<string | null>(null)
+  const [visualNow, setVisualNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setVisualNow(Date.now()), 100)
+    return () => window.clearInterval(interval)
+  }, [])
 
   return (
     <div>
@@ -59,10 +65,16 @@ export function GeneratorPanel() {
           const definition = GENERATORS[id]
           const generator = state.generators[id]
           const cycle = generatorCycleSeconds(id, generator.owned)
-          const progress = generator.owned > 0 ? Math.min(generator.cycleProgressSeconds / cycle, 1) : 0
+          const visualElapsed = Math.min(Math.max((visualNow - state.lastSeenTimestamp) / 1_000, 0), 1.1)
+          const visualProgress = generator.owned > 0
+            ? ((generator.cycleProgressSeconds + visualElapsed) % cycle) / cycle
+            : 0
+          const secondsRemaining = generator.owned > 0 ? Math.max(cycle - (generator.cycleProgressSeconds + visualElapsed) % cycle, 0) : cycle
           const purchaseCount = resolvePurchaseQuantity(state, id, quantity)
           const cost = bulkGeneratorPrice(id, generator.owned, purchaseCount)
           const affordable = purchaseCount > 0 && cost <= state.resources.credits
+          const milestone = nextGeneratorMilestone(generator.owned)
+          const milestoneProgress = Math.min(generator.owned / milestone, 1)
 
           return (
             <article key={id} className="grid min-h-[150px] grid-rows-[auto_1fr_auto] border border-black/15 bg-white/30 p-3 dark:border-white/10 dark:bg-white/[0.035]">
@@ -76,13 +88,16 @@ export function GeneratorPanel() {
               <div className="mt-3">
                 <div className="mb-1.5 flex justify-between text-[10px] font-semibold uppercase tracking-[0.08em] text-black/50 dark:text-white/45">
                   <span>+{number.format(creditOutputPerCycle(state, generator.owned, definition.outputPerCycle))} credits / cycle</span>
-                  <span>{formatDuration(cycle)}</span>
+                  <span>{generator.owned > 0 ? `${formatDuration(secondsRemaining)} left` : formatDuration(cycle)}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden bg-black/10 dark:bg-white/10">
-                  <div className="h-full bg-[#7d913f] transition-[width] duration-300 dark:bg-[#afc45d]" style={{ width: `${progress * 100}%` }} />
+                  <div className="h-full bg-[#7d913f] dark:bg-[#afc45d]" style={{ width: `${visualProgress * 100}%` }} />
                 </div>
-                <div className="mt-1 flex items-center gap-1 text-[10px] text-black/45 dark:text-white/40">
-                  <TimerReset className="size-3" /> Next milestone at {nextGeneratorMilestone(generator.owned)}
+                <div className="mt-2 flex items-center gap-1 text-[10px] text-black/45 dark:text-white/40">
+                  <TimerReset className="size-3" /> Milestone {generator.owned}/{milestone}
+                </div>
+                <div className="mt-1 h-1 overflow-hidden bg-black/10 dark:bg-white/10">
+                  <div className="h-full bg-[#ad7c2c] transition-[width] duration-500" style={{ width: `${milestoneProgress * 100}%` }} />
                 </div>
               </div>
               <Button

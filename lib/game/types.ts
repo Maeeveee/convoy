@@ -15,6 +15,8 @@ export type GeneratorId =
   | "childBarter"
 
 export type ExteriorUpgradeId = "openPickup" | "emergencyTarp" | "enclosedVan"
+export type EventId = "roadsideMarket" | "looseBelt" | "radioDistress" | "waterTower" | "nightWatch" | "strangerChild"
+export type EventTrigger = "scheduled" | "lowFuel" | "openPickup" | "lowBond"
 
 export type Resources = Record<ResourceKey, number>
 
@@ -47,6 +49,9 @@ export type GameState = {
   elapsedSeconds: number
   day: number
   lastSeenTimestamp: number
+  eventTimerSeconds: number
+  pendingEvent: EventId | null
+  pendingNightDay: number | null
 }
 
 export type PersistedGameState = Omit<GameState, "capacities">
