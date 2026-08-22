@@ -3,6 +3,7 @@ import { create } from "zustand"
 import {
   CHARACTER_IDS,
   EXTERIOR_BY_LEVEL,
+  FUEL_PRICE_PER_UNIT,
   GENERATORS,
   INITIAL_CAPACITIES,
   INITIAL_RESOURCES,
@@ -33,6 +34,7 @@ export type GameStore = GameState & {
     quantity: PurchaseQuantity,
   ) => ActionResult
   buyExterior: (target: "emergencyTarp" | "enclosedVan") => ActionResult
+  buyFuel: (amount: number) => ActionResult
   reset: () => void
 }
 
@@ -43,7 +45,7 @@ export function createInitialState(now = Date.now()): GameState {
     capacities: { ...INITIAL_CAPACITIES },
     characters: {
       father: { id: "father", task: "drive", energy: 100 },
-      mother: { id: "mother", task: "provision", energy: 100 },
+      mother: { id: "mother", task: "trade", energy: 100 },
       child: { id: "child", task: "connect", energy: 100 },
     },
     generators: Object.fromEntries(
@@ -86,19 +88,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
   buyGenerator: (generator, requestedQuantity) => {
     const state = get()
     const quantity = resolvePurchaseQuantity(state, generator, requestedQuantity)
-    if (quantity < 1) return { ok: false, reason: "Not enough spare parts." }
+    if (quantity < 1) return { ok: false, reason: "Not enough Trade Credits." }
     const cost = bulkGeneratorPrice(
       generator,
       state.generators[generator].owned,
       quantity,
     )
-    if (cost > state.resources.spareParts) {
-      return { ok: false, reason: "Not enough spare parts." }
+    if (cost > state.resources.credits) {
+      return { ok: false, reason: "Not enough Trade Credits." }
     }
     set({
       resources: {
         ...state.resources,
-        spareParts: state.resources.spareParts - cost,
+        credits: state.resources.credits - cost,
       },
       generators: {
         ...state.generators,
@@ -115,6 +117,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const result = buyExteriorUpgrade(get(), target)
     if (result.result.ok) set(result.state)
     return result.result
+  },
+  buyFuel: (amount) => {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { ok: false, reason: "Enter a valid fuel amount." }
+    }
+    const state = get()
+    const availableCapacity = state.capacities.fuel - state.resources.fuel
+    const fuel = Math.min(Math.floor(amount), Math.floor(availableCapacity))
+    const cost = fuel * FUEL_PRICE_PER_UNIT
+    if (fuel < 1) return { ok: false, reason: "Fuel tank is already full." }
+    if (cost > state.resources.credits) {
+      return { ok: false, reason: "Not enough Trade Credits." }
+    }
+    set({
+      resources: {
+        ...state.resources,
+        fuel: state.resources.fuel + fuel,
+        credits: state.resources.credits - cost,
+      },
+      lastSeenTimestamp: Date.now(),
+    })
+    return { ok: true, amount: fuel }
   },
   reset: () =>
     set({ ...createInitialState(), isHydrated: true, offlineSummary: null }),

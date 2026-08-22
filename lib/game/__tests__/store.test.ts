@@ -5,31 +5,32 @@ import { createInitialState, useGameStore } from "../store"
 import { buyExteriorUpgrade } from "../progression"
 
 describe("progression transactions", () => {
-  it("rejects an upgrade without enough spare parts", () => {
+  it("rejects an upgrade without enough Trade Credits", () => {
     const state = createInitialState(1_000)
     const result = buyExteriorUpgrade(state, "emergencyTarp")
 
-    expect(result.result).toEqual({ ok: false, reason: "Not enough spare parts." })
+    expect(result.result).toEqual({ ok: false, reason: "Not enough Trade Credits." })
     expect(result.state.exterior.level).toBe(1)
   })
 
   it("purchases the next upgrade instantly", () => {
+    const initial = createInitialState(1_000)
     const state = {
-      ...createInitialState(1_000),
-      resources: { ...createInitialState(1_000).resources, spareParts: 1_500 },
+      ...initial,
+      resources: { ...initial.resources, credits: 3_000 },
     }
     const result = buyExteriorUpgrade(state, "emergencyTarp")
 
     expect(result.result).toEqual({ ok: true })
     expect(result.state.exterior.level).toBe(2)
-    expect(result.state.resources.spareParts).toBe(0)
+    expect(result.state.resources.credits).toBe(0)
   })
 
   it("buys exactly enough generators to reach the next milestone", () => {
     useGameStore.getState().reset()
     const cost = bulkGeneratorPrice("fatherToolkit", 24, 1)
     useGameStore.setState((state) => ({
-      resources: { ...state.resources, spareParts: cost },
+      resources: { ...state.resources, credits: cost },
       generators: {
         ...state.generators,
         fatherToolkit: {
@@ -44,15 +45,19 @@ describe("progression transactions", () => {
 
     expect(result).toEqual({ ok: true, amount: 1 })
     expect(useGameStore.getState().generators.fatherToolkit.owned).toBe(25)
-    expect(useGameStore.getState().resources.spareParts).toBeCloseTo(0)
+    expect(useGameStore.getState().resources.credits).toBeCloseTo(0)
   })
 
-  it("rejects a next-milestone purchase when the full quantity is unaffordable", () => {
+  it("converts credits into fuel up to tank capacity", () => {
     useGameStore.getState().reset()
+    useGameStore.setState((state) => ({
+      resources: { ...state.resources, fuel: 60, credits: 100 },
+    }))
 
-    const result = useGameStore.getState().buyGenerator("fatherToolkit", "next")
+    const result = useGameStore.getState().buyFuel(20)
 
-    expect(result).toEqual({ ok: false, reason: "Not enough spare parts." })
-    expect(useGameStore.getState().generators.fatherToolkit.owned).toBe(0)
+    expect(result).toEqual({ ok: true, amount: 20 })
+    expect(useGameStore.getState().resources.fuel).toBe(80)
+    expect(useGameStore.getState().resources.credits).toBe(50)
   })
 })

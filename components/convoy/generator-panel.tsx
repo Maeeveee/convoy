@@ -10,6 +10,7 @@ import {
   resolvePurchaseQuantity,
 } from "@/lib/game/generators"
 import { useGameStore } from "@/lib/game/store"
+import { creditOutputPerCycle } from "@/lib/game/simulation"
 import type { GeneratorId, PurchaseQuantity } from "@/lib/game/types"
 
 const generatorIds = Object.keys(GENERATORS) as GeneratorId[]
@@ -61,7 +62,7 @@ export function GeneratorPanel() {
           const progress = generator.owned > 0 ? Math.min(generator.cycleProgressSeconds / cycle, 1) : 0
           const purchaseCount = resolvePurchaseQuantity(state, id, quantity)
           const cost = bulkGeneratorPrice(id, generator.owned, purchaseCount)
-          const affordable = purchaseCount > 0 && cost <= state.resources.spareParts
+          const affordable = purchaseCount > 0 && cost <= state.resources.credits
 
           return (
             <article key={id} className="grid min-h-[150px] grid-rows-[auto_1fr_auto] border border-black/15 bg-white/30 p-3 dark:border-white/10 dark:bg-white/[0.035]">
@@ -74,7 +75,7 @@ export function GeneratorPanel() {
               </div>
               <div className="mt-3">
                 <div className="mb-1.5 flex justify-between text-[10px] font-semibold uppercase tracking-[0.08em] text-black/50 dark:text-white/45">
-                  <span>+{number.format(generator.owned * definition.outputPerCycle)} {definition.resource}</span>
+                  <span>+{number.format(creditOutputPerCycle(state, generator.owned, definition.outputPerCycle))} credits / cycle</span>
                   <span>{formatDuration(cycle)}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden bg-black/10 dark:bg-white/10">
@@ -94,7 +95,7 @@ export function GeneratorPanel() {
                   setMessage(result.ok ? null : result.reason)
                 }}
               >
-                Buy {purchaseCount || "-"} · {number.format(cost)} parts
+                Buy {purchaseCount || "-"} · {number.format(cost)} credits
               </Button>
             </article>
           )

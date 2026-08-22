@@ -8,7 +8,6 @@ import {
   MapPin,
   PackageOpen,
   RotateCcw,
-  Wrench,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +20,7 @@ import { GeneratorPanel } from "./generator-panel"
 import { OfflineSummaryDialog } from "./offline-summary"
 import { TaskPanel } from "./task-panel"
 import { UpgradePanel } from "./upgrade-panel"
+import { FuelPanel } from "./fuel-panel"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 
@@ -96,15 +96,8 @@ export function GameShell() {
           />
           <ResourceStat
             icon={<PackageOpen />}
-            label="Provisions"
-            value={resources.provisions}
-            max={capacities.provisions}
-            tone="green"
-          />
-          <ResourceStat
-            icon={<Wrench />}
-            label="Spare parts"
-            value={resources.spareParts}
+            label="Trade credits"
+            value={resources.credits}
             tone="steel"
           />
           <ResourceStat icon={<Heart />} label="Family bond" value={bond} max={100} tone="red" />
@@ -127,6 +120,7 @@ export function GameShell() {
             <GeneratorPanel />
           </section>
           <aside className="divide-y divide-black/15 bg-[#d2ccbe] dark:divide-white/10 dark:bg-[#161a17]">
+            <FuelPanel />
             <TaskPanel />
             <UpgradePanel />
           </aside>

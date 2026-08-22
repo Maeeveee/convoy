@@ -17,7 +17,7 @@ import type {
   ResourceKey,
 } from "./types"
 
-const TASK_IDS = ["drive", "repair", "provision", "connect", "rest"] as const
+const TASK_IDS = ["drive", "repair", "trade", "connect", "rest"] as const
 
 export const STORAGE_KEY = "convoy-save"
 
@@ -40,7 +40,7 @@ function isValidSave(value: unknown): value is PersistedGameState {
     return false
   }
 
-  const resourceKeys: ResourceKey[] = ["fuel", "provisions", "spareParts"]
+  const resourceKeys: ResourceKey[] = ["fuel", "credits"]
   if (
     resourceKeys.some(
       (key) =>
@@ -157,9 +157,8 @@ export function applyOfflineProgress(
       state: { ...state, lastSeenTimestamp: now },
       summary: {
         offlineSeconds: 0,
-        fuelGained: 0,
-        provisionsGained: 0,
-        sparePartsGained: 0,
+        fuelChange: 0,
+        creditsGained: 0,
         distanceGained: 0,
       },
     }
@@ -173,18 +172,16 @@ export function applyOfflineProgress(
     now,
   )
   const resolvedState = { ...progressed, bond: state.bond }
-  const fuelGained = resolvedState.resources.fuel - state.resources.fuel
-  const provisionsGained = resolvedState.resources.provisions - state.resources.provisions
-  const sparePartsGained = resolvedState.resources.spareParts - state.resources.spareParts
+  const fuelChange = resolvedState.resources.fuel - state.resources.fuel
+  const creditsGained = resolvedState.resources.credits - state.resources.credits
   const distanceGained = resolvedState.distance - state.distance
 
   return {
     state: resolvedState,
     summary: {
       offlineSeconds,
-      fuelGained,
-      provisionsGained,
-      sparePartsGained,
+        fuelChange,
+        creditsGained,
       distanceGained,
     },
   }

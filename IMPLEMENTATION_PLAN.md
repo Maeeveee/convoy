@@ -9,7 +9,8 @@ The MVP is complete when a player can:
 - Open the game and understand the current family, vehicle, resources, bond, day, and distance.
 - Leave the game open and see generator cycles, production, and consumption continue in real time.
 - Assign one task to each family member and change assignments at any time.
-- Buy repeatable generators using spare parts and purchase x1, x10, x25, Next milestone, or xMax quantities.
+- Buy repeatable generators using Trade Credits and purchase x1, x10, x25, Next milestone, or xMax quantities.
+- Buy Fuel with Trade Credits to keep the convoy moving.
 - Respond to random events with two or three choices and see their consequences.
 - Receive an automatic night-family moment at each day boundary without being blocked from playing.
 - Buy three instant exterior upgrades: open pickup, emergency tarp, and enclosed van.
@@ -26,7 +27,7 @@ These decisions keep the first release aligned with the design document and avoi
 | State | Zustand; keep simulation rules in framework-independent modules |
 | Persistence | Versioned `localStorage` save; no backend or account system |
 | Scene | HTML/CSS and lightweight CSS animation; no Phaser/PixiJS initially |
-| Resources | Fuel, provisions (food and water combined), spare parts, distance, bond |
+| Resources | Fuel, Trade Credits, distance, and bond; no provisions or spare-parts currency in the MVP |
 | Relationship | One combined family bond value from 0 to 100 |
 | Time | Configurable real-time day duration, initially 5 minutes |
 | Offline progress | 60% effective cycle time, capped at 10 hours; bond does not gain offline |
@@ -37,6 +38,8 @@ These decisions keep the first release aligned with the design document and avoi
 | Generator milestones | At 25, 50, 100, 200, then every 100 units; each reached milestone halves that generator's cycle time |
 | Generator production | Discrete cycles with per-generator base duration and output; partial progress persists |
 | Prestige | Legacy is designed but deferred until the cycle economy is balanced |
+| Economy | Every generator produces Trade Credits; credits buy generators, Fuel, and vehicle upgrades |
+| Early pacing | Start with 150 credits; first generator costs 25; shared generator growth is 1.10 |
 
 ## 3. Proposed Project Structure
 
@@ -106,7 +109,7 @@ hooks/
 - Add Zustand and create the game store around the typed state model.
 - Implement a simulation action that accepts elapsed seconds and applies:
   - completed generator cycles and partial cycle progress;
-  - fuel and provisions consumption;
+  - fuel consumption;
   - distance gain;
   - gradual bond decay;
   - low-resource and low-bond modifiers.
@@ -128,7 +131,8 @@ hooks/
 
 - A test can advance the game by any chosen number of seconds and assert exact state changes.
 - Buying a generator immediately changes its future cycle output and/or cycle timing.
-- Upgrades resolve immediately and cannot be purchased without enough spare parts.
+- Upgrades resolve immediately and cannot be purchased without enough Trade Credits.
+- Fuel purchases spend 2.5 Trade Credits per unit and cannot exceed tank capacity.
 
 ### Phase 2: Persistence and Offline Progress
 
@@ -199,7 +203,7 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 - Implement automatic day rollover and queue a night-family moment once per day.
 - Add two or three night choices that primarily affect bond and may trade against resources or efficiency.
 - Implement report-card calculations from distance, exterior upgrade level, and average/current bond.
-- Define the Legacy economy after cycle balancing: total run production, threshold, average-bond multiplier, reset state, and permanent upgrade costs.
+- Define the Legacy economy after cycle balancing: total credits generated in the run, threshold, average-bond multiplier, reset state, and permanent upgrade costs.
 
 **Deliverables:**
 
@@ -249,7 +253,7 @@ Phase 2 implementation uses a client hydration hook, a five-second autosave inte
 - Track total run production and average bond for Legacy rewards.
 - Add persistent Legacy currency and permanent upgrades such as global production bonuses and upgrade discounts.
 - Add the independent interior upgrade path.
-- Split food and water if the combined provisions resource is no longer expressive enough.
+- Add a separate physical-survival resource only if playtesting proves Fuel and Bond are not expressive enough.
 - Add pair-specific bond values after validating the single bond meter.
 - Replace geometric placeholders with a consistent final art direction.
 - Add more event variety, character expressions, and scenery/parallax layers.

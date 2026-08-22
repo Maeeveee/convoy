@@ -11,17 +11,17 @@ import {
 
 describe("generator pricing", () => {
   it("increases the price from the owned count", () => {
-    expect(generatorPrice("fatherToolkit", 0)).toBe(30)
-    expect(generatorPrice("fatherToolkit", 1)).toBeCloseTo(33.6)
+    expect(generatorPrice("fatherToolkit", 0)).toBe(25)
+    expect(generatorPrice("fatherToolkit", 1)).toBeCloseTo(27.5)
   })
 
   it("calculates bulk prices as each sequential purchase", () => {
-    expect(bulkGeneratorPrice("fatherToolkit", 0, 2)).toBeCloseTo(63.6)
+    expect(bulkGeneratorPrice("fatherToolkit", 0, 2)).toBeCloseTo(52.5)
   })
 
   it("returns the largest affordable quantity", () => {
-    expect(affordableGeneratorQuantity("fatherToolkit", 0, 63.6)).toBe(2)
-    expect(affordableGeneratorQuantity("fatherToolkit", 0, 29)).toBe(0)
+    expect(affordableGeneratorQuantity("fatherToolkit", 0, 52.5)).toBe(2)
+    expect(affordableGeneratorQuantity("fatherToolkit", 0, 24)).toBe(0)
   })
 
   it("calculates the next milestone and exact purchase quantity", () => {

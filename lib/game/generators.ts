@@ -25,13 +25,13 @@ export function bulkGeneratorPrice(
 export function affordableGeneratorQuantity(
   id: GeneratorId,
   owned: number,
-  spareParts: number,
+  credits: number,
 ): number {
   let quantity = 0
   let total = 0
   while (quantity < 10_000) {
     const nextPrice = generatorPrice(id, owned + quantity)
-    if (total + nextPrice > spareParts) break
+    if (total + nextPrice > credits) break
     total += nextPrice
     quantity += 1
   }
@@ -83,7 +83,7 @@ export function resolvePurchaseQuantity(
     return affordableGeneratorQuantity(
       id,
       state.generators[id].owned,
-      state.resources.spareParts,
+      state.resources.credits,
     )
   }
   return quantity

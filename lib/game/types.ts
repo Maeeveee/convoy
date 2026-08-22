@@ -1,8 +1,8 @@
-export type ResourceKey = "fuel" | "provisions" | "spareParts"
+export type ResourceKey = "fuel" | "credits"
 
 export type CharacterId = "father" | "mother" | "child"
 
-export type TaskId = "drive" | "repair" | "provision" | "connect" | "rest"
+export type TaskId = "drive" | "repair" | "trade" | "connect" | "rest"
 
 export type GeneratorId =
   | "fatherToolkit"
@@ -53,9 +53,8 @@ export type PersistedGameState = Omit<GameState, "capacities">
 
 export type OfflineSummary = {
   offlineSeconds: number
-  fuelGained: number
-  provisionsGained: number
-  sparePartsGained: number
+  fuelChange: number
+  creditsGained: number
   distanceGained: number
 }
 

@@ -10,7 +10,7 @@ const number = new Intl.NumberFormat("en", { maximumFractionDigits: 0 })
 export function UpgradePanel() {
   const state = useGameStore()
   const result = nextExteriorUpgrade(state)
-  const affordable = Boolean(result && state.resources.spareParts >= result.cost)
+  const affordable = Boolean(result && state.resources.credits >= result.cost)
 
   return (
     <section className="p-4 sm:p-5">
@@ -42,7 +42,7 @@ export function UpgradePanel() {
               disabled={!affordable}
               onClick={() => state.buyExterior(result.id as "emergencyTarp" | "enclosedVan")}
             >
-              Upgrade · {number.format(result.cost)} parts
+              Upgrade · {number.format(result.cost)} credits
             </Button>
           </div>
         ) : (

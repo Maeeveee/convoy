@@ -9,8 +9,8 @@ export function buyExteriorUpgrade(
   if (upgrade.level !== state.exterior.level + 1) {
     return { state, result: { ok: false, reason: "That upgrade is not next." } }
   }
-  if (state.resources.spareParts < upgrade.cost) {
-    return { state, result: { ok: false, reason: "Not enough spare parts." } }
+  if (state.resources.credits < upgrade.cost) {
+    return { state, result: { ok: false, reason: "Not enough Trade Credits." } }
   }
 
   return {
@@ -18,7 +18,7 @@ export function buyExteriorUpgrade(
       ...state,
       resources: {
         ...state.resources,
-        spareParts: state.resources.spareParts - upgrade.cost,
+        credits: state.resources.credits - upgrade.cost,
       },
       exterior: { level: upgrade.level, id: target },
       lastSeenTimestamp: Date.now(),

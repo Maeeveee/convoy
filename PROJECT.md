@@ -80,7 +80,7 @@ Because the game has one main scene and a small number of character states, thre
 [ Front of pickup ] [ Cabin/bed - main interactive area ] [ Rear section ]
     Father (driver's seat, although the player does not steer)
     Mother and Child (cabin/bed positions change with assigned tasks)
-[ Resource bar: Fuel, Provisions, Spare Parts, Bond ]
+[ Resource bar: Fuel, Trade Credits, Bond ]
 [ Upgrade panel: exterior/interior, accessed through separate tabs or buttons ]
 ```
 
@@ -94,10 +94,11 @@ The road background scrolls slowly and loops horizontally. The MVP only needs on
 
 | Resource | Purpose | Change |
 |---|---|---|
-| Fuel | Keeps the vehicle moving; empty fuel triggers emergency events | Decreases over time; restored by generators and events |
-| Food and water | Represents the family's physical condition | Combined into Provisions for the MVP; decreases over time and is restored by generators |
-| Spare Parts | Main currency for vehicle upgrades and generator purchases | Produced by generators and events |
+| Fuel | Keeps the vehicle moving; empty fuel slows travel and can trigger emergency events | Decreases over time; purchased with Trade Credits or awarded by events |
+| Trade Credits | Universal currency for generators, fuel, and vehicle upgrades | Produced by every generator and some events |
 | Distance | Passive progress and score | Increases automatically with time |
+
+The MVP intentionally omits food, water, and spare parts as separate resources. A single universal currency makes generator value easy to compare and creates one clear decision: reinvest credits into production, buy fuel to keep moving, or save for a vehicle upgrade.
 
 ### 6.1a Generator System
 
@@ -105,25 +106,33 @@ Generators are repeatable purchases inspired by classic idle incrementals such a
 
 **Generator roster**
 
-| Generator | Theme | Resource | Base cycle | Output/cycle |
+| Generator | Theme | Base cycle | Credits/cycle | Base price |
 |---|---|---|---:|---:|
-| Father's Toolkit | Small daily repairs | Spare Parts | 10 sec | 1 |
-| Emergency Cans | Mother's emergency stores | Provisions | 30 sec | 1 |
-| Hand Radio | Bartering information with survivors | Spare Parts | 2 min | 3 |
-| Truck-Bed Garden | Growing emergency vegetables | Provisions | 3 min | 3 |
-| Water Purifier | Filtering questionable water | Provisions | 5 min | 5 |
-| Backup Battery | Additional energy storage | Fuel | 10 min | 2 |
-| Mini Generator | Additional electricity | Fuel | 20 min | 5 |
-| Child's Barter Network | The child's radio relationships | Spare Parts | 1 hour | 20 |
+| Father's Toolkit | Paid repair work | 10 sec | 4 | 25 |
+| Emergency Cans | Trading managed emergency stock | 30 sec | 30 | 75 |
+| Hand Radio | Bartering information with survivors | 2 min | 400 | 250 |
+| Truck-Bed Garden | Trading mobile-grown produce | 3 min | 1,200 | 500 |
+| Water Purifier | Trading safe filtered water | 5 min | 4,000 | 1,000 |
+| Backup Battery | Selling stored energy and charging access | 10 min | 16,000 | 2,000 |
+| Mini Generator | Selling dependable mobile power | 20 min | 80,000 | 5,000 |
+| Child's Barter Network | The child's long-distance trade relationships | 1 hour | 600,000 | 12,000 |
 
 **Generator mechanics**
 
-- Price increases exponentially: `next_price = base_price * growth^owned`.
-- When a cycle completes, it produces `owned * output_per_cycle` of its resource.
+- Every generator uses a shared 10% price growth: `next_price = base_price * 1.10^owned`.
+- When a cycle completes, it produces `owned * credits_per_cycle` Trade Credits.
 - Partial cycle progress is preserved across active ticks, tab closing, reloads, and offline processing.
 - Purchase quantities are **x1 / x10 / x25 / Next / xMax**. `Next` buys exactly enough units to reach the next milestone.
 - Milestones occur at **25 / 50 / 100 / 200**, then every 100 units.
 - Each reached milestone halves that generator's cycle duration. Milestones affect timing, not output per cycle, so their benefit is clear without multiplying the economy twice.
+- The starting state is 150 Trade Credits and 60/100 Fuel, allowing an immediate first purchase.
+- Early generator purchases target a payback period of roughly 30-90 seconds before task and bond modifiers.
+
+**Fuel purchase**
+
+- Fuel costs 2.5 Trade Credits per unit in the first balance pass.
+- The player may buy 10, 25, or enough Fuel to fill the tank.
+- Fuel is never generated automatically by normal generators.
 
 **Relationship to other systems**
 
@@ -153,7 +162,7 @@ When the vehicle breaks down beyond repair, or when the player chooses to reset,
 **Proposed reward formula:**
 
 ```text
-Legacy earned = floor(sqrt(total spare parts generated during the run / threshold) * bond multiplier)
+Legacy earned = floor(sqrt(total Trade Credits generated during the run / threshold) * bond multiplier)
 ```
 
 The threshold must be chosen after the cycle-based generator economy has been balanced. The bond multiplier should use the run's average Bond Meter, rewarding a family that stayed united rather than only optimizing resources.
@@ -172,7 +181,7 @@ The threshold must be chosen after the cycle-based generator economy has been ba
 | Character | Idle function |
 |---|---|
 | Father | Driving and repair efficiency; affects fuel consumption and emergency repair speed |
-| Mother | Converts raw resources into provisions/medicine and handles simple crafting |
+| Mother | Manages trade inventory and improves Trade Credit production |
 | Child | Main bond generator; can help with low efficiency but becomes tired faster |
 
 ### 6.4 Vehicle Upgrades (Two Paths)
@@ -221,7 +230,7 @@ The game is not a binary win/loss experience. Outcomes combine survival and rela
 To avoid overscoping, the MVP includes:
 
 1. One static scene with simple scrolling background.
-2. Three resource groups: Fuel, Provisions, and Spare Parts, plus one combined Bond meter.
+2. Fuel and Trade Credits, plus one combined Bond meter.
 3. Assignable character tasks without deep submenus.
 4. Five to eight dialogue events to validate the loop.
 5. One upgrade path first: exterior, with three stages from pickup to tarp to van.
@@ -252,7 +261,7 @@ Exterior and interior purchases resolve immediately. There is no construction ba
 - Resolve generator cycles using 60% effective offline time, preserving each generator's partial cycle progress.
 - Apply the recommended offline cap of 10 hours; excess time is ignored.
 - Bond does not increase offline and remains stable rather than suffering a large decay.
-- Show a short return summary such as `While you were away: +120 Spare Parts, +40 Fuel`.
+- Show a short return summary such as `While you were away: +1,200 Trade Credits, -18 Fuel`.
 
 ### 9.4 Endings and Variations
 

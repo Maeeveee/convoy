@@ -13,10 +13,10 @@ const clamp = (value: number, min: number, max: number) =>
 
 function taskModifiers(state: GameState) {
   return {
-    spareParts:
+    credits:
       (state.characters.father.task === "repair" ? 1.35 : 1) *
+      (state.characters.mother.task === "trade" ? 1.4 : 1) *
       (state.characters.child.task === "connect" ? 1.1 : 1),
-    provisions: state.characters.mother.task === "provision" ? 1.4 : 1,
     fuel: 1,
   }
 }
@@ -25,30 +25,38 @@ function bondModifier(state: GameState) {
   return 0.7 + state.bond / 333
 }
 
+export function creditCycleMultiplier(state: GameState) {
+  return (
+    (state.characters.father.task === "repair" ? 1.35 : 1) *
+    (state.characters.mother.task === "trade" ? 1.4 : 1) *
+    (state.characters.child.task === "connect" ? 1.1 : 1) *
+    bondModifier(state)
+  )
+}
+
+export function creditOutputPerCycle(state: GameState, owned: number, baseOutput: number) {
+  return owned * baseOutput * creditCycleMultiplier(state)
+}
+
 export function getPassiveRates(state: GameState) {
   const rates: Record<ResourceKey, number> = {
     fuel: 0,
-    provisions: 0,
-    spareParts: 0,
+    credits: 0,
   }
   const modifiers = taskModifiers(state)
-  const bond = bondModifier(state)
 
   for (const [id, generator] of Object.entries(state.generators) as [
     keyof typeof GENERATORS,
     GameState["generators"][keyof GameState["generators"]],
   ][]) {
     const definition = GENERATORS[id]
-    const rate =
-      (generator.owned * definition.outputPerCycle) /
-      generatorCycleSeconds(id, generator.owned)
-    rates[definition.resource] += rate * modifiers[definition.resource]
+    const rate = (generator.owned * definition.outputPerCycle) / generatorCycleSeconds(id, generator.owned)
+    rates.credits += rate * modifiers.credits * bondModifier(state)
   }
 
   return {
     fuel: rates.fuel,
-    provisions: rates.provisions * bond,
-    spareParts: rates.spareParts * bond,
+    credits: rates.credits,
   }
 }
 
@@ -58,8 +66,6 @@ export function applyGeneratorCycles(
 ): { resources: GameState["resources"]; generators: GameState["generators"] } {
   const resources = { ...state.resources }
   const generators = { ...state.generators }
-  const modifiers = taskModifiers(state)
-  const bond = bondModifier(state)
 
   for (const [id, generator] of Object.entries(state.generators) as [
     keyof typeof GENERATORS,
@@ -73,14 +79,9 @@ export function applyGeneratorCycles(
     const progress = totalProgress % cycleSeconds
     const output =
       completedCycles *
-      generator.owned *
-      definition.outputPerCycle *
-      modifiers[definition.resource] *
-      (definition.resource === "spareParts" || definition.resource === "provisions"
-        ? bond
-        : 1)
+      creditOutputPerCycle(state, generator.owned, definition.outputPerCycle)
 
-    resources[definition.resource] += output
+    resources.credits += output
     generators[id] = { ...generator, cycleProgressSeconds: progress }
   }
 
@@ -111,12 +112,6 @@ export function simulateElapsed(
     0,
     state.capacities.fuel,
   )
-  const provisions = clamp(
-    cycled.resources.provisions -
-      BASE_CONSUMPTION_PER_SECOND.provisions * seconds,
-    0,
-    state.capacities.provisions,
-  )
   const fuelFactor = state.resources.fuel > 0 ? 1 : 0.15
   const distance =
     state.distance + BASE_DISTANCE_PER_SECOND * fuelFactor * productionSeconds
@@ -130,7 +125,7 @@ export function simulateElapsed(
 
   return {
     ...state,
-    resources: { ...cycled.resources, fuel, provisions },
+    resources: { ...cycled.resources, fuel },
     generators: cycled.generators,
     distance,
     bond: clamp(state.bond + bondDelta, 0, 100),

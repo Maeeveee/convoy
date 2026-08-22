@@ -11,34 +11,16 @@ import { createInitialState } from "../store"
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>()
-
-  get length() {
-    return this.values.size
-  }
-
-  clear() {
-    this.values.clear()
-  }
-
-  getItem(key: string) {
-    return this.values.get(key) ?? null
-  }
-
-  key(index: number) {
-    return [...this.values.keys()][index] ?? null
-  }
-
-  removeItem(key: string) {
-    this.values.delete(key)
-  }
-
-  setItem(key: string, value: string) {
-    this.values.set(key, value)
-  }
+  get length() { return this.values.size }
+  clear() { this.values.clear() }
+  getItem(key: string) { return this.values.get(key) ?? null }
+  key(index: number) { return [...this.values.keys()][index] ?? null }
+  removeItem(key: string) { this.values.delete(key) }
+  setItem(key: string, value: string) { this.values.set(key, value) }
 }
 
 describe("persistence", () => {
-  it("round trips a state without serializing derived capacities", () => {
+  it("round trips the Trade Credits state", () => {
     const initial = createInitialState(1_000)
     const loaded = deserializeState(serializeState(initial))
 
@@ -58,7 +40,7 @@ describe("persistence", () => {
     expect(loadState(storage, 6_000).lastSeenTimestamp).toBe(6_000)
   })
 
-  it("applies capped offline production once and keeps bond unchanged", () => {
+  it("applies capped offline credit production and keeps bond unchanged", () => {
     const initial = createInitialState(0)
     const withGenerator = {
       ...initial,
@@ -76,7 +58,7 @@ describe("persistence", () => {
     expect(result.summary.offlineSeconds).toBe(10 * 60 * 60)
     expect(result.state.lastSeenTimestamp).toBe(12 * 60 * 60 * 1_000)
     expect(result.state.bond).toBe(initial.bond)
-    expect(result.state.resources.spareParts).toBeGreaterThan(initial.resources.spareParts)
+    expect(result.state.resources.credits).toBeGreaterThan(initial.resources.credits)
     expect(result.state.elapsedSeconds).toBe(10 * 60 * 60)
   })
 

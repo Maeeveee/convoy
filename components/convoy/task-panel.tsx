@@ -12,8 +12,8 @@ const characterNames: Record<CharacterId, string> = {
 
 const availableTasks: Record<CharacterId, TaskId[]> = {
   father: ["drive", "repair", "connect", "rest"],
-  mother: ["provision", "connect", "repair", "rest"],
-  child: ["connect", "provision", "rest"],
+  mother: ["trade", "connect", "repair", "rest"],
+  child: ["connect", "trade", "rest"],
 }
 
 export function TaskPanel() {

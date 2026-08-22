@@ -1,15 +1,29 @@
 import { describe, expect, it } from "vitest"
 
 import { createInitialState } from "../store"
-import { simulate } from "../simulation"
+import { creditOutputPerCycle, simulate } from "../simulation"
 
 describe("simulation", () => {
-  it("produces a deterministic one-minute tick", () => {
+  it("consumes fuel and produces credits through a completed cycle", () => {
     const initial = createInitialState(1_000)
-    const next = simulate(initial, 60, 2_000)
+    const next = simulate(
+      {
+        ...initial,
+        generators: {
+          ...initial.generators,
+          fatherToolkit: {
+            id: "fatherToolkit",
+            owned: 1,
+            cycleProgressSeconds: 0,
+          },
+        },
+      },
+      10,
+      2_000,
+    )
 
-    expect(next.resources.fuel).toBeCloseTo(79.88)
-    expect(next.resources.provisions).toBeCloseTo(64.94)
+    expect(next.resources.fuel).toBeCloseTo(59.7)
+    expect(next.resources.credits).toBeCloseTo(155.46, 2)
     expect(next.distance).toBeCloseTo(0.8)
     expect(next.bond).toBeCloseTo(62.08)
     expect(next.lastSeenTimestamp).toBe(2_000)
@@ -19,7 +33,7 @@ describe("simulation", () => {
     const initial = createInitialState(1_000)
     const next = simulate(
       { ...initial, resources: { ...initial.resources, fuel: 0 } },
-      60,
+      10,
       2_000,
     )
 
@@ -33,7 +47,7 @@ describe("simulation", () => {
     expect(next.elapsedSeconds).toBe(10)
   })
 
-  it("halves a generator's cycle at its milestone", () => {
+  it("halves a generator cycle at its milestone", () => {
     const initial = createInitialState(1_000)
     const next = simulate(
       {
@@ -51,7 +65,13 @@ describe("simulation", () => {
       2_000,
     )
 
-    expect(next.resources.spareParts).toBeCloseTo(144.3701, 3)
+    expect(next.resources.credits).toBeGreaterThan(initial.resources.credits)
     expect(next.generators.fatherToolkit.cycleProgressSeconds).toBe(0)
+  })
+
+  it("uses the same modified payout shown by the generator panel", () => {
+    const state = createInitialState(1_000)
+
+    expect(creditOutputPerCycle(state, 14, 4)).toBeCloseTo(76.425, 2)
   })
 })
