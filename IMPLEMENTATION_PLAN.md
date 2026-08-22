@@ -152,6 +152,8 @@ hooks/
 - A simulated absence produces the expected capped summary.
 - Malformed `localStorage` data never prevents the app from loading.
 
+Phase 2 implementation uses a client hydration hook, a five-second autosave interval, visibility-change saves, a ten-hour offline cap, and a structured offline summary held by the game store for the return dialog.
+
 ### Phase 3: MVP Game Interface and Scene
 
 **Purpose:** Expose the simulation through the single-screen decision interface.

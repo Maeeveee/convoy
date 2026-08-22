@@ -16,12 +16,17 @@ import type {
   CharacterId,
   GameState,
   GeneratorId,
+  OfflineSummary,
   PurchaseQuantity,
   TaskId,
 } from "./types"
 
 export type GameStore = GameState & {
+  isHydrated: boolean
+  offlineSummary: OfflineSummary | null
   tick: (elapsedSeconds: number) => void
+  hydrate: (state: GameState, summary: OfflineSummary) => void
+  dismissOfflineSummary: () => void
   assignTask: (character: CharacterId, task: TaskId) => ActionResult
   buyGenerator: (
     generator: GeneratorId,
@@ -55,7 +60,16 @@ export function createInitialState(now = Date.now()): GameState {
 
 export const useGameStore = create<GameStore>((set, get) => ({
   ...createInitialState(),
+  isHydrated: false,
+  offlineSummary: null,
   tick: (elapsedSeconds) => set((state) => simulate(state, elapsedSeconds)),
+  hydrate: (state, summary) =>
+    set({
+      ...state,
+      isHydrated: true,
+      offlineSummary: summary.offlineSeconds > 1 ? summary : null,
+    }),
+  dismissOfflineSummary: () => set({ offlineSummary: null }),
   assignTask: (character, task) => {
     if (!CHARACTER_IDS.includes(character)) {
       return { ok: false, reason: "Unknown character." }
@@ -102,5 +116,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (result.result.ok) set(result.state)
     return result.result
   },
-  reset: () => set(createInitialState()),
+  reset: () =>
+    set({ ...createInitialState(), isHydrated: true, offlineSummary: null }),
 }))

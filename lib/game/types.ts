@@ -48,6 +48,16 @@ export type GameState = {
   lastSeenTimestamp: number
 }
 
+export type PersistedGameState = Omit<GameState, "capacities">
+
+export type OfflineSummary = {
+  offlineSeconds: number
+  fuelGained: number
+  provisionsGained: number
+  sparePartsGained: number
+  distanceGained: number
+}
+
 export type PurchaseQuantity = 1 | 10 | 25 | "next" | "max"
 
 export type ActionResult =
