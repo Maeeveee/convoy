@@ -37,7 +37,6 @@ export function reportCard(state: GameState) {
 }
 
 export function nextExteriorUpgrade(state: GameState) {
-  return EXTERIOR_BY_LEVEL[state.exterior.level]
-    ? EXTERIOR_UPGRADES[EXTERIOR_BY_LEVEL[state.exterior.level]]
-    : null
+  const id = EXTERIOR_BY_LEVEL[state.exterior.level]
+  return id ? { id, ...EXTERIOR_UPGRADES[id] } : null
 }
