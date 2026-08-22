@@ -6,7 +6,7 @@ const names = { father: "Father", mother: "Mother", child: "Child" } as const
 export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
   const characters = useGameStore((state) => state.characters)
   const exterior = useGameStore((state) => state.exterior)
-  const bond = useGameStore((state) => state.bond)
+  const pairBonds = useGameStore((state) => state.pairBonds)
 
   return (
     <section className="convoy-scene relative isolate h-[300px] overflow-hidden border-b border-black/20 sm:h-[390px] dark:border-white/10">
@@ -31,14 +31,14 @@ export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
           <div className="truck-bed-rail" />
           <div className="cargo-crate cargo-crate-one" />
           <div className="cargo-crate cargo-crate-two" />
-          <CharacterMarker name={names.mother} task={TASKS[characters.mother.task].label} position="mother" bond={bond} />
-          <CharacterMarker name={names.child} task={TASKS[characters.child.task].label} position="child" bond={bond} />
+          <CharacterMarker name={names.mother} task={TASKS[characters.mother.task].label} position="mother" bond={pairBonds.motherChild} />
+          <CharacterMarker name={names.child} task={TASKS[characters.child.task].label} position="child" bond={pairBonds.fatherChild} />
         </div>
         <div className="truck-cabin">
           <div className="truck-window" />
           <div className="truck-door-line" />
           <div className="truck-handle" />
-          <CharacterMarker name={names.father} task={TASKS[characters.father.task].label} position="father" bond={bond} />
+          <CharacterMarker name={names.father} task={TASKS[characters.father.task].label} position="father" bond={pairBonds.fatherMother} />
         </div>
         <div className="truck-hood" />
         <div className="truck-headlamp" />

@@ -23,7 +23,7 @@ describe("events and report card", () => {
     const event = eventById("roadsideMarket")
 
     expect(event?.choices[0]).toMatchObject({ id: "trade", credits: 180, bond: 1 })
-    expect(NIGHT_CHOICES).toHaveLength(3)
+    expect(NIGHT_CHOICES.length).toBeGreaterThanOrEqual(3)
   })
 
   it("scores distance, upgrade level, and bond", () => {

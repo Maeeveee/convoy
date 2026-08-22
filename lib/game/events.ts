@@ -98,6 +98,11 @@ export const NIGHT_CHOICES: EventChoice[] = [
   { id: "sleep", label: "Sleep early", consequence: "+1 Fuel, no bond change", fuel: 1 },
 ]
 
+NIGHT_CHOICES.push(
+  { id: "music", label: "Make music together", consequence: "+8 Bond, +1 Fuel", bond: 8, fuel: 1 },
+  { id: "quiet", label: "Share the quiet", consequence: "+3 Bond, +100 Trade Credits", bond: 3, credits: 100 },
+)
+
 export const EVENT_INTERVAL_SECONDS = 180
 export const EVENT_COOLDOWN_SECONDS = 45
 

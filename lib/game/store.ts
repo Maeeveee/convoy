@@ -3,6 +3,7 @@ import { create } from "zustand"
 import {
   CHARACTER_IDS,
   EXTERIOR_BY_LEVEL,
+  INTERIOR_BY_LEVEL,
   fuelPricePerUnit,
   GENERATORS,
   INITIAL_CAPACITIES,
@@ -10,7 +11,7 @@ import {
   SAVE_VERSION,
 } from "./constants"
 import { bulkGeneratorPrice, resolvePurchaseQuantity } from "./generators"
-import { buyExteriorUpgrade } from "./progression"
+import { buyExteriorUpgrade, buyInteriorUpgrade, legacyReward } from "./progression"
 import { chooseEvent, eventById, EVENT_COOLDOWN_SECONDS, EVENT_INTERVAL_SECONDS, NIGHT_CHOICES } from "./events"
 import { simulate } from "./simulation"
 import type {
@@ -35,9 +36,11 @@ export type GameStore = GameState & {
     quantity: PurchaseQuantity,
   ) => ActionResult
   buyExterior: (target: "emergencyTarp" | "enclosedVan") => ActionResult
+  buyInterior: (target: "semiLivable" | "comfortableCabin") => ActionResult
   buyFuel: (amount: number) => ActionResult
   resolveEvent: (choiceId: string) => ActionResult
   resolveNight: (choiceId: string) => ActionResult
+  prestige: () => ActionResult
   reset: () => void
 }
 
@@ -55,7 +58,13 @@ export function createInitialState(now = Date.now()): GameState {
       Object.keys(GENERATORS).map((id) => [id, { id, owned: 0, cycleProgressSeconds: 0 }]),
     ) as GameState["generators"],
     exterior: { level: 1, id: EXTERIOR_BY_LEVEL[0] },
+    interior: { level: 1, id: INTERIOR_BY_LEVEL[0] },
     bond: 62,
+    pairBonds: { fatherMother: 62, fatherChild: 62, motherChild: 62 },
+    bondSum: 0,
+    bondSampleSeconds: 0,
+    totalCreditsGenerated: 0,
+    meta: { legacy: 0, totalLegacyEarned: 0, upgrades: { productionLevel: 0, discountLevel: 0 } },
     distance: 0,
     elapsedSeconds: 0,
     day: 1,
@@ -96,6 +105,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         eventTimerSeconds: shouldEvent ? 0 : timer,
         pendingEvent: shouldEvent ? chooseEvent(next, trigger).id : state.pendingEvent,
         pendingNightDay: crossedDay ? next.day : state.pendingNightDay,
+        bondSum: state.bondSum + next.bond * elapsedSeconds,
+        bondSampleSeconds: state.bondSampleSeconds + elapsedSeconds,
+        totalCreditsGenerated: state.totalCreditsGenerated + Math.max(next.resources.credits - state.resources.credits, 0),
       }
     }),
   hydrate: (state, summary) =>
@@ -148,6 +160,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   buyExterior: (target) => {
     const result = buyExteriorUpgrade(get(), target)
+    if (result.result.ok) set(result.state)
+    return result.result
+  },
+  buyInterior: (target) => {
+    const result = buyInteriorUpgrade(get(), target)
     if (result.result.ok) set(result.state)
     return result.result
   },
@@ -206,6 +223,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
       lastSeenTimestamp: Date.now(),
     })
     return { ok: true }
+  },
+  prestige: () => {
+    const state = get()
+    const earned = legacyReward(state)
+    if (earned < 1) return { ok: false, reason: "This journey has not earned Legacy yet." }
+    const fresh = createInitialState(Date.now())
+    set({
+      ...fresh,
+      meta: { ...state.meta, legacy: state.meta.legacy + earned, totalLegacyEarned: state.meta.totalLegacyEarned + earned },
+      isHydrated: true,
+      offlineSummary: null,
+    })
+    return { ok: true, amount: earned }
   },
   reset: () =>
     set({ ...createInitialState(), isHydrated: true, offlineSummary: null }),

@@ -117,6 +117,7 @@ export function simulateElapsed(
   const bondDelta =
     (childConnecting ? 0.008 : -0.002) * seconds + restingCount * 0.001 * seconds
   const elapsedTotal = state.elapsedSeconds + seconds
+  const pairDelta = bondDelta * 0.8
 
   return {
     ...state,
@@ -124,6 +125,11 @@ export function simulateElapsed(
     generators: cycled.generators,
     distance,
     bond: clamp(state.bond + bondDelta, 0, 100),
+    pairBonds: {
+      fatherMother: clamp(state.pairBonds.fatherMother + pairDelta, 0, 100),
+      fatherChild: clamp(state.pairBonds.fatherChild + pairDelta * 1.1, 0, 100),
+      motherChild: clamp(state.pairBonds.motherChild + pairDelta * 0.9, 0, 100),
+    },
     elapsedSeconds: elapsedTotal,
     day: Math.floor(elapsedTotal / DAY_DURATION_SECONDS) + 1,
     lastSeenTimestamp: now,

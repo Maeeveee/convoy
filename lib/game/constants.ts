@@ -2,10 +2,12 @@ import type {
   CharacterId,
   ExteriorUpgradeId,
   GeneratorId,
+  InteriorUpgradeId,
   TaskId,
 } from "./types"
 
-export const SAVE_VERSION = 3
+export const SAVE_VERSION = 4
+export const LEGACY_THRESHOLD = 10_000
 export const DAY_DURATION_SECONDS = 5 * 60
 export const MAX_ACTIVE_TICK_SECONDS = 10
 export const MAX_OFFLINE_SECONDS = 10 * 60 * 60
@@ -152,3 +154,10 @@ export const EXTERIOR_BY_LEVEL: ExteriorUpgradeId[] = [
   "emergencyTarp",
   "enclosedVan",
 ]
+
+export const INTERIOR_UPGRADES: Record<InteriorUpgradeId, { level: number; label: string; description: string; cost: number }> = {
+  emergencySetup: { level: 1, label: "Emergency setup", description: "A mattress, stove, and enough order to sleep safely.", cost: 0 },
+  semiLivable: { level: 2, label: "Semi-livable cabin", description: "A real bed and a compact kitchen make long days easier.", cost: 5_000 },
+  comfortableCabin: { level: 3, label: "Comfortable cabin", description: "A divider, clear radio, and organized storage restore privacy.", cost: 35_000 },
+}
+export const INTERIOR_BY_LEVEL: InteriorUpgradeId[] = ["emergencySetup", "semiLivable", "comfortableCabin"]

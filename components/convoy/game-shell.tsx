@@ -25,6 +25,8 @@ import { FuelPanel } from "./fuel-panel"
 import { DecisionDialogs } from "./decision-dialogs"
 import { ReportCard } from "./report-card"
 import { AudioController } from "./audio-controller"
+import { InteriorPanel } from "./interior-panel"
+import { LegacyPanel } from "./legacy-panel"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 
@@ -163,6 +165,8 @@ export function GameShell() {
             <FuelPanel />
             <TaskPanel />
             <UpgradePanel />
+            <InteriorPanel />
+            <LegacyPanel />
             <ReportCard />
           </aside>
         </div>

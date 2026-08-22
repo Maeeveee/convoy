@@ -47,6 +47,12 @@ function isValidSave(value: unknown): value is PersistedGameState {
     (typeof save.pendingEvent !== "string" || !eventById(save.pendingEvent))
   ) return false
   if (save.pendingNightDay !== null && (!isFiniteNumber(save.pendingNightDay) || save.pendingNightDay < 1)) return false
+  if (!save.interior || !save.pairBonds || !save.meta) return false
+  if (save.interior.level < 1 || save.interior.level > 3) return false
+  if (Object.values(save.pairBonds).some((value) => !isFiniteNumber(value) || value < 0 || value > 100)) return false
+  if (!isFiniteNumber(save.bondSum) || save.bondSum < 0 || !isFiniteNumber(save.bondSampleSeconds) || save.bondSampleSeconds < 0) return false
+  if (!isFiniteNumber(save.totalCreditsGenerated) || save.totalCreditsGenerated < 0) return false
+  if (!isFiniteNumber(save.meta.legacy) || save.meta.legacy < 0 || !isFiniteNumber(save.meta.totalLegacyEarned) || save.meta.totalLegacyEarned < 0) return false
   if (!save.resources || !save.characters || !save.generators || !save.exterior) {
     return false
   }
@@ -124,6 +130,12 @@ export function toPersistedState(state: GameState): PersistedGameState {
     pendingEvent: state.pendingEvent,
     pendingNightDay: state.pendingNightDay,
     fuelPurchases: state.fuelPurchases,
+    interior: state.interior,
+    pairBonds: state.pairBonds,
+    bondSum: state.bondSum,
+    bondSampleSeconds: state.bondSampleSeconds,
+    totalCreditsGenerated: state.totalCreditsGenerated,
+    meta: state.meta,
   }
 }
 

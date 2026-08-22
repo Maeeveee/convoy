@@ -13,6 +13,7 @@ export function AudioController() {
   const day = useGameStore((state) => state.day)
   const pendingEvent = useGameStore((state) => state.pendingEvent)
   const pendingNightDay = useGameStore((state) => state.pendingNightDay)
+  const fuel = useGameStore((state) => state.resources.fuel)
   const [enabled, setEnabled] = useState(false)
   const roadRef = useRef<HTMLAudioElement | null>(null)
   const musicRef = useRef<HTMLAudioElement | null>(null)
@@ -50,6 +51,11 @@ export function AudioController() {
     if (!music) return
     music.volume = pendingEvent || pendingNightDay ? 0.08 : 0.16
   }, [enabled, pendingEvent, pendingNightDay])
+
+  useEffect(() => {
+    if (!enabled || !roadRef.current) return
+    roadRef.current.volume = fuel <= 0 ? 0.06 : fuel <= 20 ? 0.14 : 0.22
+  }, [enabled, fuel])
 
   return (
     <>

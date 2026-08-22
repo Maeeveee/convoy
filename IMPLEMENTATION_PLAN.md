@@ -286,6 +286,8 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 - Evaluate Phaser or PixiJS only if CSS/HTML no longer handles the required visual complexity.
 - Keep Capacitor, Electron, and Tauri packaging deferred until browser retention and balance are satisfactory.
 
+Phase 6 browser implementation now includes Legacy reset/reward state, interior upgrade path, pair-specific Bond values, additional night choices, character mood inputs from pair Bond, and fuel-sensitive audio ambience. Packaging remains excluded.
+
 **Exit criteria:**
 
 - Each expansion has a demonstrated player or retention benefit and does not weaken the one-place, decision-focused design pillars.

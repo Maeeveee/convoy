@@ -283,3 +283,4 @@ For solo development, avoid complex branching narrative endings early:
 - **Later:** Two or three descriptive tiers based on final numbers, shown as text rather than separate cutscenes.
 - **Later:** Legacy prestige resets and permanent meta-upgrades after the cycle economy has been balanced.
 - **Deferred:** Capacitor, Electron, and Tauri packaging.
+- Phase 6 currently includes Legacy reset/rewards, interior upgrades, pair-specific Bond values, extra night choices, and Fuel-sensitive road ambience. Packaging remains deferred.

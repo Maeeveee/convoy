@@ -15,6 +15,8 @@ export type GeneratorId =
   | "childBarter"
 
 export type ExteriorUpgradeId = "openPickup" | "emergencyTarp" | "enclosedVan"
+export type InteriorUpgradeId = "emergencySetup" | "semiLivable" | "comfortableCabin"
+export type BondPair = "fatherMother" | "fatherChild" | "motherChild"
 export type EventId = "roadsideMarket" | "looseBelt" | "radioDistress" | "waterTower" | "nightWatch" | "strangerChild" | "emptyTank"
 export type EventTrigger = "scheduled" | "lowFuel" | "emptyFuel" | "openPickup" | "lowBond"
 
@@ -37,6 +39,14 @@ export type ExteriorState = {
   id: ExteriorUpgradeId
 }
 
+export type InteriorState = { level: number; id: InteriorUpgradeId }
+export type PairBonds = Record<BondPair, number>
+export type MetaProgression = {
+  legacy: number
+  totalLegacyEarned: number
+  upgrades: { productionLevel: number; discountLevel: number }
+}
+
 export type GameState = {
   saveVersion: number
   resources: Resources
@@ -44,7 +54,13 @@ export type GameState = {
   characters: Record<CharacterId, CharacterState>
   generators: Record<GeneratorId, GeneratorState>
   exterior: ExteriorState
+  interior: InteriorState
   bond: number
+  pairBonds: PairBonds
+  bondSum: number
+  bondSampleSeconds: number
+  totalCreditsGenerated: number
+  meta: MetaProgression
   distance: number
   elapsedSeconds: number
   day: number
