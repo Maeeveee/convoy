@@ -7,6 +7,10 @@ export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
   const characters = useGameStore((state) => state.characters)
   const exterior = useGameStore((state) => state.exterior)
   const pairBonds = useGameStore((state) => state.pairBonds)
+  const pendingEvent = useGameStore((state) => state.pendingEvent)
+  const pendingNightDay = useGameStore((state) => state.pendingNightDay)
+  const fuel = useGameStore((state) => state.resources.fuel)
+  const interaction = getInteractionState(characters, pendingEvent, pendingNightDay)
 
   return (
     <section className="convoy-scene relative isolate h-[300px] overflow-hidden border-b border-black/20 sm:h-[390px] dark:border-white/10">
@@ -25,23 +29,26 @@ export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
         </p>
       </div>
 
-      <div className={`truck truck-tier-${exterior.level}`}>
+      <div className={`truck truck-tier-${exterior.level} ${fuel <= 0 ? "truck-stopped" : ""}`}>
         <div className="truck-bed">
           {exterior.level >= 2 && <div className="truck-cover" />}
           <div className="truck-bed-rail" />
           <div className="cargo-crate cargo-crate-one" />
           <div className="cargo-crate cargo-crate-two" />
-          <CharacterMarker name={names.mother} task={TASKS[characters.mother.task].label} position="mother" bond={pairBonds.motherChild} />
-          <CharacterMarker name={names.child} task={TASKS[characters.child.task].label} position="child" bond={pairBonds.fatherChild} />
+          <CharacterMarker name={names.mother} task={TASKS[characters.mother.task].label} position="mother" bond={pairBonds.motherChild} activity={interaction.mother} />
+          <CharacterMarker name={names.child} task={TASKS[characters.child.task].label} position="child" bond={pairBonds.fatherChild} activity={interaction.child} />
         </div>
         <div className="truck-cabin">
           <div className="truck-window" />
+          <div className="truck-window-glare" />
           <div className="truck-door-line" />
           <div className="truck-handle" />
-          <CharacterMarker name={names.father} task={TASKS[characters.father.task].label} position="father" bond={pairBonds.fatherMother} />
+          <CharacterMarker name={names.father} task={TASKS[characters.father.task].label} position="father" bond={pairBonds.fatherMother} activity={interaction.father} />
         </div>
         <div className="truck-hood" />
         <div className="truck-headlamp" />
+        <div className="truck-grille" />
+        <div className="truck-side-stripe" />
         <div className="truck-bumper" />
         <div className="truck-wheel truck-wheel-left" />
         <div className="truck-wheel truck-wheel-right" />
@@ -61,23 +68,53 @@ function CharacterMarker({
   task,
   position,
   bond,
+  activity,
 }: {
   name: string
   task: string
   position: "father" | "mother" | "child"
   bond: number
+  activity: { mode: "work" | "walk" | "meet"; bubble: string }
 }) {
   const mood = bond > 70 ? "steady" : bond > 35 ? "strained" : "distant"
   return (
-    <div className={`character-marker character-${position}`}>
+    <div className={`character-marker character-${position} character-mode-${activity.mode}`}>
       <div className="character-head" />
       <div className="character-hair" />
       <div className="character-body" />
       <div className="character-bag" />
+      <div className="speech-bubble">{activity.bubble}</div>
       <div className="character-label">
         <span>{name}</span>
         <small>{task} · {mood}</small>
       </div>
     </div>
   )
+}
+
+function getInteractionState(
+  characters: Record<"father" | "mother" | "child", { task: string }>,
+  pendingEvent: string | null,
+  pendingNightDay: number | null,
+) {
+  if (pendingEvent) {
+    return {
+      father: { mode: "meet" as const, bubble: "We need a plan." },
+      mother: { mode: "meet" as const, bubble: "Stay together." },
+      child: { mode: "meet" as const, bubble: "I heard them." },
+    }
+  }
+  if (pendingNightDay) {
+    return {
+      father: { mode: "meet" as const, bubble: "Night is close." },
+      mother: { mode: "meet" as const, bubble: "One choice together." },
+      child: { mode: "meet" as const, bubble: "Can we talk?" },
+    }
+  }
+  const walk = (task: string) => task === "connect" || task === "rest"
+  return {
+    father: { mode: walk(characters.father.task) ? "walk" as const : "work" as const, bubble: TASKS[characters.father.task as keyof typeof TASKS]?.label ?? "Working" },
+    mother: { mode: walk(characters.mother.task) ? "walk" as const : "work" as const, bubble: TASKS[characters.mother.task as keyof typeof TASKS]?.label ?? "Working" },
+    child: { mode: walk(characters.child.task) ? "walk" as const : "work" as const, bubble: TASKS[characters.child.task as keyof typeof TASKS]?.label ?? "Working" },
+  }
 }

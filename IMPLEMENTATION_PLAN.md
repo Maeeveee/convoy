@@ -294,6 +294,8 @@ Phase 6 browser implementation now includes Legacy reset/reward state, interior 
 
 Current Phase 6 preparation includes browser-safe playback for `road-sound.mp3`, `music-1.mp3`, and `music-2.mp3`, plus a richer geometric placeholder scene. Packaging remains explicitly deferred.
 
+The scene interaction pass adds assignment-driven walking/work states, family meeting poses for events and night rituals, and contextual speech bubbles.
+
 ## 5. Core Rules to Implement
 
 ### Resource and Cycle Simulation
