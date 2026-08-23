@@ -15,20 +15,20 @@ export function GameHeader({ day, secondsToNight }: { day: number; secondsToNigh
 
   return (
     <header className="border-b border-black/15 bg-[#202821] text-[#f0ebde] dark:border-white/10 dark:bg-[#111512]">
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-2">
-          <div className="grid size-9 place-items-center border border-[#d3a849]/50 bg-[#d3a849]/10"><Image src="/image/logo.png" alt="Convoy logo" width={30} height={30} className="object-contain" /></div>
-          <div><h1 className="text-base font-semibold uppercase tracking-[0.18em]">Convoy</h1><p className="flex items-center gap-1.5 text-[11px] text-[#aeb8ad]"><AlarmClock className="size-3.5 text-[#d3a849]" />Day {day} · Night in {formatClock(secondsToNight)}</p></div>
+      <div className="mx-auto flex max-w-[120rem] items-center justify-between px-4 py-3 sm:px-6 lg:px-[24px] lg:py-[12px]">
+        <div className="flex items-center gap-2 lg:gap-[8px]">
+          <div className="grid size-9 place-items-center border border-[#d3a849]/50 bg-[#d3a849]/10 lg:size-[36px]"><Image src="/image/logo.png" alt="Convoy logo" width={30} height={30} className="size-7 object-contain lg:size-[30px]" /></div>
+          <div className="min-w-0"><h1 className="truncate text-base font-semibold uppercase tracking-[0.18em] lg:text-[16px]">Convoy</h1><p className="flex items-center gap-1.5 text-xs text-[#aeb8ad] lg:gap-[6px] lg:text-[11px]"><AlarmClock className="size-3.5 shrink-0 text-[#d3a849] lg:size-[14px]" /><span>Day {day}</span><span className="hidden sm:inline">· Night in {formatClock(secondsToNight)}</span></p></div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1"><AudioController /><ThemeToggle /></div>
+        <div className="grid grid-cols-2 items-center gap-1 sm:flex sm:gap-3 lg:gap-[12px]">
+          <div className="contents sm:flex sm:items-center sm:gap-1 lg:gap-[4px]"><AudioController /><ThemeToggle /></div>
           <div className="relative">
-            <Button variant="ghost" size="sm" className="rounded-sm text-[#aeb8ad] hover:bg-white/10 hover:text-white" onClick={() => { setObjectiveOpen((open) => !open); setSystemsOpen(false) }} aria-expanded={objectiveOpen} aria-controls="journey-objective-menu"><Flag className="size-4" /><span className="hidden sm:inline">Objective</span><ChevronDown className={`size-3 transition-transform ${objectiveOpen ? "rotate-180" : ""}`} /></Button>
-            {objectiveOpen && <div id="journey-objective-menu" className="absolute top-[calc(100%+0.75rem)] right-0 z-50 w-[min(24rem,calc(100vw-2rem))] border border-white/15 bg-[#202521] text-[#ebe5d7] shadow-2xl"><JourneyObjective embedded /></div>}
+            <Button variant="ghost" size="sm" className="size-8 rounded-sm px-0 text-[#aeb8ad] hover:bg-white/10 hover:text-white sm:h-8 sm:w-auto sm:px-3 lg:gap-[4px] lg:px-[12px] lg:text-[14px]" onClick={() => { setObjectiveOpen((open) => !open); setSystemsOpen(false) }} aria-expanded={objectiveOpen} aria-controls="journey-objective-menu"><Flag className="size-4 lg:size-[16px]" /><span className="hidden sm:inline">Objective</span><ChevronDown className={`hidden size-3 transition-transform sm:block lg:size-[12px] ${objectiveOpen ? "rotate-180" : ""}`} /></Button>
+            {objectiveOpen && <div id="journey-objective-menu" className="fixed top-[5.75rem] right-4 left-4 z-50 max-h-[calc(100svh-6.25rem)] overflow-y-auto border border-white/15 bg-[#202521] text-[#ebe5d7] shadow-2xl sm:absolute sm:top-[calc(100%+0.75rem)] sm:right-0 sm:left-auto sm:max-h-none sm:w-[calc(100vw-2rem)] sm:overflow-visible lg:top-[44px] lg:w-[384px]"><JourneyObjective embedded /></div>}
           </div>
           <div className="relative">
-            <Button variant="ghost" size="sm" className="rounded-sm text-[#aeb8ad] hover:bg-white/10 hover:text-white" onClick={() => { setSystemsOpen((open) => !open); setObjectiveOpen(false) }} aria-expanded={systemsOpen} aria-controls="convoy-systems-menu"><SlidersHorizontal className="size-4" /><span className="hidden sm:inline">Systems</span><ChevronDown className={`size-3 transition-transform ${systemsOpen ? "rotate-180" : ""}`} /></Button>
-            {systemsOpen && <div id="convoy-systems-menu" className="absolute top-[calc(100%+0.75rem)] right-0 z-50 max-h-[calc(100svh-5rem)] w-[min(25rem,calc(100vw-2rem))] overflow-y-auto divide-y divide-white/10 border border-white/15 bg-[#202521] text-[#ebe5d7] shadow-2xl"><FuelPanel /><TaskPanel /><UpgradePanel /><InteriorPanel /></div>}
+            <Button variant="ghost" size="sm" className="size-8 rounded-sm px-0 text-[#aeb8ad] hover:bg-white/10 hover:text-white sm:h-8 sm:w-auto sm:px-3 lg:gap-[4px] lg:px-[12px] lg:text-[14px]" onClick={() => { setSystemsOpen((open) => !open); setObjectiveOpen(false) }} aria-expanded={systemsOpen} aria-controls="convoy-systems-menu"><SlidersHorizontal className="size-4 lg:size-[16px]" /><span className="hidden sm:inline">Systems</span><ChevronDown className={`hidden size-3 transition-transform sm:block lg:size-[12px] ${systemsOpen ? "rotate-180" : ""}`} /></Button>
+            {systemsOpen && <div id="convoy-systems-menu" className="fixed top-[5.75rem] right-4 left-4 z-50 max-h-[calc(100svh-6.25rem)] overflow-y-auto divide-y divide-white/10 border border-white/15 bg-[#202521] text-[#ebe5d7] shadow-2xl sm:absolute sm:top-[calc(100%+0.75rem)] sm:right-0 sm:left-auto sm:w-[calc(100vw-2rem)] lg:top-[44px] lg:w-[400px]"><FuelPanel /><TaskPanel /><UpgradePanel /><InteriorPanel /></div>}
           </div>
         </div>
       </div>

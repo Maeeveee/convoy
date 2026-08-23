@@ -56,10 +56,10 @@ export function OnboardingDialog({ onComplete }: { onComplete: () => void }) {
         <div className="grid min-h-[30rem] sm:grid-cols-[0.38fr_0.62fr]">
           <div className="flex min-h-40 flex-col justify-between border-b border-white/10 bg-[#171d18] p-6 sm:border-r sm:border-b-0">
             <div className="grid size-12 place-items-center border border-[#d3a849]/50 bg-[#d3a849]/10"><Image src="/image/logo.png" alt="Convoy logo" width={32} height={32} className="object-contain" /></div>
-            <div><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#d3a849]">Convoy field guide</p><div className="mt-3 flex gap-1.5">{steps.map((item, index) => <span key={item.title} className={`h-1 flex-1 ${index <= step ? "bg-[#d3a849]" : "bg-white/15"}`} />)}</div><p className="mt-2 font-mono text-xs text-[#89958b]">{step + 1} / {steps.length}</p></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d3a849] lg:text-[10px]">Convoy field guide</p><div className="mt-3 flex gap-1.5">{steps.map((item, index) => <span key={item.title} className={`h-1 flex-1 ${index <= step ? "bg-[#d3a849]" : "bg-white/15"}`} />)}</div><p className="mt-2 font-mono text-xs text-[#89958b]">{step + 1} / {steps.length}</p></div>
           </div>
           <div className="flex flex-col p-6 sm:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#d3a849]">{current.eyebrow}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d3a849] lg:text-[10px]">{current.eyebrow}</p>
             <h2 id="onboarding-title" className="mt-2 text-2xl font-semibold">{current.title}</h2>
             <p id="onboarding-description" className="mt-3 text-sm leading-6 text-[#adb6ac]">{current.description}</p>
             <div className="mt-6 grid gap-2">{current.details.map((detail) => <div key={detail} className="flex items-center gap-3 border border-white/10 bg-white/[0.03] px-3 py-2.5 text-xs"><span className="size-1.5 shrink-0 bg-[#d3a849]" />{detail}</div>)}</div>

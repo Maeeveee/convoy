@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "postcss-px-viewport": {
+      "source": "maeeveee/skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/postcss-px-viewport/SKILL.md",
+      "computedHash": "1193afcd132eb0755e3314b35da578f2d98f9308f3c98d7703989763d4a278ba"
+    }
+  }
+}

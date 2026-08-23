@@ -13,9 +13,9 @@ export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
   const interaction = getInteractionState(characters, pendingEvent, pendingNightDay)
 
   return (
-    <section className="convoy-scene relative isolate h-[300px] overflow-hidden border-b border-black/20 sm:h-[390px] dark:border-white/10">
+    <section className="convoy-scene relative isolate h-72 overflow-hidden border-b border-black/20 sm:h-80 lg:h-[390px] dark:border-white/10">
       <SceneScenery />
-      <div className="absolute top-4 left-4 border border-black/20 bg-[#e8dfcd]/85 px-3 py-2 text-[#252720] backdrop-blur-sm dark:border-white/15 dark:bg-[#1d221e]/85 dark:text-[#e8e3d6]"><p className="text-[9px] font-bold uppercase tracking-[0.16em] opacity-60">Road status</p><p className="mt-0.5 text-xs font-semibold">{dayProgress < 0.35 ? "Morning haze" : dayProgress < 0.75 ? "Hard daylight" : "Dusk approaching"}</p></div>
+      <div className="absolute top-4 left-4 border border-black/20 bg-[#e8dfcd]/85 px-3 py-2 text-[#252720] backdrop-blur-sm dark:border-white/15 dark:bg-[#1d221e]/85 dark:text-[#e8e3d6] lg:top-[16px] lg:left-[16px] lg:px-[12px] lg:py-[8px]"><p className="text-xs font-bold uppercase tracking-[0.16em] opacity-60 lg:text-[9px]">Road status</p><p className="mt-0.5 text-xs font-semibold lg:mt-[4px] lg:text-[12px]">{dayProgress < 0.35 ? "Morning haze" : dayProgress < 0.75 ? "Hard daylight" : "Dusk approaching"}</p></div>
       <SceneVehicle exterior={exterior} fuel={fuel} characters={characters} pairBonds={pairBonds} interaction={interaction} />
     </section>
   )

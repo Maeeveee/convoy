@@ -501,6 +501,77 @@ The next mechanics batch adds depth to the existing decision loop without introd
 
 **Status:** Implemented. New players receive a four-step field guide covering automatic travel, Fuel and Trade Credits, family assignments, and road decisions. The guide pauses active simulation, supports keyboard navigation, can be skipped, and stores completion separately from the game save. Returning saves bypass it.
 
+### Phase 14: Px-to-Viewport Styling Migration
+
+**Status:** Toolchain and class audit implemented; browser responsive QA pending. The project-local `.agents/skills/postcss-px-viewport` skill converts generated CSS pixel values to viewport-relative `vw` values at build time. Webpack is selected explicitly with `--webpack` for development and production builds because Next.js 16 otherwise defaults to Turbopack. The source desktop design frame is `1920px`.
+
+**Design input:** `viewportWidth: 1920`, matching the source desktop design frame.
+
+**Purpose:** Make desktop sizing proportional across supported desktop resolutions while preserving conventional mobile/tablet behavior and stable borders, icons, fixed controls, and accessibility.
+
+**Scope rules from the local skill:**
+
+- Use `postcss-px-to-viewport-8-plugin` with the existing Tailwind v4 PostCSS integration.
+- Keep `@tailwindcss/postcss` first in the PostCSS plugin chain and px-to-viewport last.
+- Use `propList: ["*", "!border*"]` so border thickness and radius remain stable.
+- Use `minPixelValue: 1` so thin one-pixel details remain fixed.
+- Enable `mediaQuery: true` for Tailwind v4 output.
+- Convert only desktop arbitrary pixel utilities behind `lg:`, `xl:`, or `2xl:` prefixes.
+- Replace unprefixed arbitrary pixel utilities with the closest built-in responsive utility for mobile/tablet, then add the desktop arbitrary value at `lg:`. Mobile fallback utilities may remain rem-based Tailwind tokens because they must not be sent through the desktop px-to-vw conversion; forcing px into the mobile fallback would make those values scale to vw and harm small-screen readability.
+- Do not indiscriminately replace every Tailwind class with arbitrary syntax; semantic layout utilities such as `flex`, `grid`, `items-center`, `w-full`, and `text-sm` remain ordinary utilities.
+- Keep the page wrappers capped with the stable `max-w-[120rem]` equivalent of 1920px so ultrawide screens do not grow indefinitely.
+- Review custom scene CSS separately because the plugin also processes static `px` values in `globals.css`, not only Tailwind output.
+- Keep inline dynamic styles unchanged where values are percentages or state-driven; do not introduce runtime px layout values.
+
+**Phase 14.1: Toolchain Configuration**
+
+- Confirm and record the desktop `viewportWidth`.
+- Add `postcss-px-to-viewport-8-plugin` to devDependencies using pnpm.
+- Configure the plugin once in `postcss.config.mjs` after `@tailwindcss/postcss`.
+- Add explicit selector exclusions for stable borders, icon wrappers, and max-width constraints where required.
+- Confirm `pnpm dev` and `pnpm build` remain Webpack-based and process the final CSS.
+
+**Phase 14.2: Tailwind Class Audit**
+
+- Inventory all arbitrary pixel utilities under `components/` and `app/`.
+- Classify each value as desktop design sizing, mobile layout sizing, a stable control/icon dimension, or a state/color value.
+- Convert desktop spacing, dimensions, and typography to `lg:[...]` forms.
+- Preserve built-in mobile classes and add explicit responsive fallbacks where the current unprefixed arbitrary class would otherwise disappear.
+- Keep arbitrary color and opacity values only when the existing design requires them; px-to-viewport does not affect color values.
+
+**Phase 14.3: Static CSS Audit**
+
+- Audit `app/globals.css` for scene dimensions, animation distances, borders, and media-query values.
+- Exclude border properties and deliberate fixed-pixel details from conversion.
+- Validate vehicle, character, scenery, road animation, dialog, and navbar dimensions after conversion.
+- Keep full-height behavior based on `svh`, `min-h-svh`, `h-screen`, or flex layout rather than converted pixel heights.
+
+**Phase 14.4: Responsive and Build Verification**
+
+- Verify generated CSS contains expected `vw` values for desktop sizing.
+- Confirm no unintended unprefixed arbitrary px utilities remain.
+- Run `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm run lint`, `pnpm run typecheck`, and `pnpm run build`.
+- Check 1920px, 1440px, 1366px, 1280px, and mobile widths in a real browser.
+- Check ultrawide max-width behavior, fixed dropdowns, onboarding modal sizing, theme switching, and scene animations.
+
+**Exit criteria:**
+
+- The chosen desktop frame width is documented and used consistently.
+- Tailwind and custom CSS px values are converted only where proportional desktop scaling is intended.
+- Mobile/tablet layout remains readable and uses built-in responsive utilities.
+- Borders, icons, fixed menus, dialogs, and animations remain stable.
+- All pnpm automated checks pass and browser QA has no critical visual regressions.
+
+**Recommended execution order:** Confirm viewport width, then Phase 14.1, 14.2, 14.3, and 14.4 in separate commits.
+
+**Current implementation status:** `postcss-px-to-viewport-8-plugin` is configured at `viewportWidth: 1920`; pnpm frozen install passes; generated production CSS contains `vw` output; page wrappers use the stable `max-w-[120rem]` equivalent of 1920px; desktop spacing and typography use explicit `lg:[px]` values where audited; mobile fallback utilities remain intentionally rem-based Tailwind tokens; remaining source pixel values are in static scene CSS and are intentionally converted proportionally. Tests, lint, typecheck, build, and diff validation pass. Real-browser checks at 1920px, 1440px, 1366px, 1280px, mobile, and ultrawide widths remain pending. Note that px-to-viewport scales dimensions proportionally; it does not replace responsive layout rules, so narrow layouts still require Tailwind breakpoints and mobile fallbacks.
+
+The component-wide spacing pass now covers header title/value spacing, resource stats, generator cards, fuel/tasks/upgrades, objectives, reports, memories, dialogs, and settlement controls with desktop `lg:[px]` overrides. Default Tailwind spacing remains only as the responsive mobile/tablet fallback layer.
+
+The interactive-surface pass additionally covers the header logo image, alarm/menu icons, Objective and Systems dropdown widths/offsets, mute/theme controls, generator quantity selector, generator card typography/progress controls, and their desktop padding/gap relationships.
+
+The final visible-surface audit covers warning messages, generator buy buttons, dropdown panel content, Legacy controls, Journey Report values, road-event choices, the deferred Review Decision button, vehicle metadata, and Road Status labels with explicit desktop text/icon/spacing values.
+
 ## 5. Core Rules to Implement
 
 ### Resource and Cycle Simulation

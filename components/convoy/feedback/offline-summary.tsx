@@ -12,7 +12,7 @@ export function OfflineSummaryDialog() {
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-black/60 p-4" role="presentation">
       <div role="dialog" aria-modal="true" aria-labelledby="return-title" className="w-full max-w-md border border-white/15 bg-[#202521] p-5 text-[#ebe5d7] shadow-2xl">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#d3a849]">Journey resumed</p>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#d3a849] lg:text-[10px]">Journey resumed</p>
         <h2 id="return-title" className="mt-1 text-xl font-semibold">While you were away</h2>
         <p className="mt-2 text-sm text-[#adb6ac]">The family was away for {hours}h {minutes}m. Generator cycles ran at 60% efficiency.</p>
         <div className="mt-5 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
@@ -27,5 +27,5 @@ export function OfflineSummaryDialog() {
 }
 
 function SummaryValue({ label, value }: { label: string; value: number }) {
-  return <div className="bg-[#202521] p-3"><p className="text-[10px] uppercase tracking-[0.1em] text-[#8f9b8f]">{label}</p><p className="mt-1 font-mono text-sm tabular-nums">{value > 0 ? "+" : ""}{number.format(value)}</p></div>
+  return <div className="bg-[#202521] p-3"><p className="text-xs uppercase tracking-[0.1em] text-[#8f9b8f] lg:text-[10px]">{label}</p><p className="mt-1 font-mono text-sm tabular-nums">{value > 0 ? "+" : ""}{number.format(value)}</p></div>
 }

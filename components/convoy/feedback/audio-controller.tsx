@@ -64,12 +64,12 @@ export function AudioController() {
       <Button
         variant="ghost"
         size="icon-sm"
-        className="rounded-sm text-[#aeb8ad] hover:bg-white/10 hover:text-white"
+        className="rounded-sm text-[#aeb8ad] hover:bg-white/10 hover:text-white lg:size-[32px]"
         onClick={() => setEnabled((current) => !current)}
         aria-label={enabled ? "Mute sound" : "Enable sound"}
         title={enabled ? "Mute sound" : "Enable sound"}
       >
-        {enabled ? <Volume2 /> : <VolumeX />}
+        {enabled ? <Volume2 className="size-4 lg:size-[16px]" /> : <VolumeX className="size-4 lg:size-[16px]" />}
       </Button>
     </>
   )
