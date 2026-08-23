@@ -23,7 +23,7 @@ describe("simulation", () => {
     )
 
     expect(next.resources.fuel).toBeCloseTo(59.73)
-    expect(next.resources.credits).toBeCloseTo(156.16, 2)
+    expect(next.resources.credits).toBeCloseTo(56.16, 2)
     expect(next.distance).toBeCloseTo(0.72)
     expect(next.bond).toBeCloseTo(62.085)
     expect(next.lastSeenTimestamp).toBe(2_000)
@@ -80,6 +80,16 @@ describe("simulation", () => {
     expect(creditOutputPerCycle(state, 14, 4)).toBe(
       creditOutputPerCycle({ ...state, bond: 100 }, 14, 4),
     )
+  })
+
+  it("applies the all-generators and permanent Legacy production bonuses", () => {
+    const initial = createInitialState(1_000)
+    const generators = Object.fromEntries(
+      Object.entries(initial.generators).map(([id, generator]) => [id, { ...generator, owned: 1 }]),
+    ) as typeof initial.generators
+    const state = { ...initial, generators, meta: { ...initial.meta, totalLegacyEarned: 10 } }
+
+    expect(creditOutputPerCycle(state, 1, 4)).toBeCloseTo(9.4248, 4)
   })
 
   it("does not award credits before a cycle completes", () => {

@@ -18,7 +18,7 @@ export const OFFLINE_MULTIPLIER = 0.6
 
 export const INITIAL_RESOURCES = {
   fuel: 60,
-  credits: 150,
+  credits: 50,
 } as const
 
 export const INITIAL_CAPACITIES = {
@@ -157,6 +157,11 @@ export const GENERATORS: Record<
 
 export const GENERATOR_MILESTONES = [25, 50, 100, 200] as const
 export const GENERATOR_MILESTONE_GROWTH = 100
+export const ALL_GENERATORS_MILESTONES = [1, 25, 50, 100, 200] as const
+export const ALL_GENERATORS_MILESTONE_GROWTH = 100
+export const ALL_GENERATORS_OUTPUT_MULTIPLIER = 1.5
+export const ALL_GENERATORS_SPEED_MULTIPLIER = 2
+export const LEGACY_PRODUCTION_BONUS = 0.002
 
 export const EXTERIOR_UPGRADES: Record<
   ExteriorUpgradeId,

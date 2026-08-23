@@ -1,4 +1,8 @@
 import {
+  ALL_GENERATORS_MILESTONE_GROWTH,
+  ALL_GENERATORS_MILESTONES,
+  ALL_GENERATORS_OUTPUT_MULTIPLIER,
+  ALL_GENERATORS_SPEED_MULTIPLIER,
   GENERATOR_MILESTONE_GROWTH,
   GENERATOR_MILESTONES,
   GENERATORS,
@@ -67,8 +71,72 @@ export function generatorMilestoneMultiplier(owned: number): number {
   return 2 ** (firstMilestoneCount + laterMilestoneCount)
 }
 
-export function generatorCycleSeconds(id: GeneratorId, owned: number): number {
-  return GENERATORS[id].cycleSeconds / generatorMilestoneMultiplier(owned)
+export function generatorCycleSeconds(id: GeneratorId, owned: number, speedMultiplier = 1): number {
+  return GENERATORS[id].cycleSeconds / generatorMilestoneMultiplier(owned) / speedMultiplier
+}
+
+export function hasOwnedAllGenerators(state: GameState): boolean {
+  return allGeneratorsMilestoneCount(state) > 0
+}
+
+export function allGeneratorsMilestoneCount(state: GameState): number {
+  const minimumOwned = Math.min(
+    ...Object.values(state.generators).map((generator) => generator.owned),
+  )
+  const definedCount = ALL_GENERATORS_MILESTONES.filter(
+    (milestone) => minimumOwned >= milestone,
+  ).length
+  const lastMilestone = ALL_GENERATORS_MILESTONES.at(-1) ?? 0
+  const laterCount = minimumOwned >= lastMilestone
+    ? Math.floor((minimumOwned - lastMilestone) / ALL_GENERATORS_MILESTONE_GROWTH)
+    : 0
+  return definedCount + laterCount
+}
+
+export function allGeneratorsOutputMultiplier(state: GameState): number {
+  return ALL_GENERATORS_OUTPUT_MULTIPLIER ** Math.ceil(allGeneratorsMilestoneCount(state) / 2)
+}
+
+export function allGeneratorsSpeedMultiplier(state: GameState): number {
+  return ALL_GENERATORS_SPEED_MULTIPLIER ** Math.floor(allGeneratorsMilestoneCount(state) / 2)
+}
+
+export function nextAllGeneratorsMilestone(state: GameState): number {
+  const minimumOwned = Math.min(
+    ...Object.values(state.generators).map((generator) => generator.owned),
+  )
+  const definedMilestone = ALL_GENERATORS_MILESTONES.find(
+    (milestone) => milestone > minimumOwned,
+  )
+  if (definedMilestone) return definedMilestone
+
+  const lastMilestone = ALL_GENERATORS_MILESTONES.at(-1) ?? 0
+  return (
+    Math.floor((minimumOwned - lastMilestone) / ALL_GENERATORS_MILESTONE_GROWTH + 1) *
+      ALL_GENERATORS_MILESTONE_GROWTH +
+    lastMilestone
+  )
+}
+
+export function allGeneratorsMilestoneRows(state: GameState, upcomingCount = 3) {
+  const unlockedCount = allGeneratorsMilestoneCount(state)
+  const rowCount = Math.max(unlockedCount + upcomingCount, ALL_GENERATORS_MILESTONES.length)
+  const lastDefinedIndex = ALL_GENERATORS_MILESTONES.length - 1
+  const lastDefinedMilestone = ALL_GENERATORS_MILESTONES[lastDefinedIndex]
+
+  return Array.from({ length: rowCount }, (_, index) => {
+    const count = index + 1
+    const threshold = index <= lastDefinedIndex
+      ? ALL_GENERATORS_MILESTONES[index]
+      : lastDefinedMilestone + (index - lastDefinedIndex) * ALL_GENERATORS_MILESTONE_GROWTH
+    return {
+      threshold,
+      unlocked: count <= unlockedCount,
+      bonusType: count % 2 === 1 ? "output" as const : "speed" as const,
+      outputMultiplier: ALL_GENERATORS_OUTPUT_MULTIPLIER ** Math.ceil(count / 2),
+      speedMultiplier: ALL_GENERATORS_SPEED_MULTIPLIER ** Math.floor(count / 2),
+    }
+  })
 }
 
 export function resolvePurchaseQuantity(

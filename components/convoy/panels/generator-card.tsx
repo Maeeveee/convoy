@@ -3,7 +3,7 @@ import { TimerReset } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { GeneratorId, GameState, PurchaseQuantity } from "@/lib/game/types"
 import { GENERATORS } from "@/lib/game/constants"
-import { bulkGeneratorPrice, generatorCycleSeconds, nextGeneratorMilestone, resolvePurchaseQuantity } from "@/lib/game/generators"
+import { allGeneratorsSpeedMultiplier, bulkGeneratorPrice, generatorCycleSeconds, nextGeneratorMilestone, resolvePurchaseQuantity } from "@/lib/game/generators"
 import { creditOutputPerCycle } from "@/lib/game/simulation"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
@@ -11,7 +11,7 @@ const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 export function GeneratorCard({ id, state, quantity, visualNow, onBuy }: { id: GeneratorId; state: GameState; quantity: PurchaseQuantity; visualNow: number; onBuy: (id: GeneratorId, quantity: PurchaseQuantity) => void }) {
   const definition = GENERATORS[id]
   const generator = state.generators[id]
-  const cycle = generatorCycleSeconds(id, generator.owned)
+  const cycle = generatorCycleSeconds(id, generator.owned, allGeneratorsSpeedMultiplier(state))
   const visualElapsed = Math.min(Math.max((visualNow - state.lastSeenTimestamp) / 1_000, 0), 1.1)
   const visualProgress = generator.owned > 0 ? ((generator.cycleProgressSeconds + visualElapsed) % cycle) / cycle : 0
   const secondsRemaining = generator.owned > 0 ? Math.max(cycle - (generator.cycleProgressSeconds + visualElapsed) % cycle, 0) : cycle
