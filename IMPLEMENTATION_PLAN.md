@@ -253,7 +253,7 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 
 - Automated balance guardrails pass: first-generator payback remains 30-90 seconds and fresh Fuel runway is at least 30 minutes.
 - Automated state coverage passes for generator cycles, event choices, night choices, persistence, offline progress, affordability, and pending-decision precedence.
-- `npm test` passes with 28 tests.
+- `npm test` passes with 33 tests before the Phase 5.1 UI-only hardening batch.
 - `npm run lint` passes.
 - `npm run typecheck` passes.
 - `npm run build` passes.
@@ -266,6 +266,34 @@ Generator cards use a 100 ms visual animation layer for smooth progress, while t
 - Test keyboard focus order and modal focus behavior.
 - Test localStorage reload, offline return, reset, and pending event recovery in a real browser session.
 - Play a fresh 5-15 minute session and tune event frequency or generator values only if observed behavior differs from the guardrails.
+
+### Phase 5.1: Decision and Release Hardening Batch
+
+**Purpose:** Close the remaining interaction and accessibility gap identified during MVP review without expanding the game systems.
+
+**Work items:**
+
+- Keep road events and night rituals pending in game state while allowing the player to continue using the rest of the interface.
+- Replace blocking decision overlays with a docked decision panel that can be deferred and reopened.
+- Support Escape and explicit review-later controls without resolving the decision.
+- Add dialog labels, non-modal semantics, initial focus when a decision opens, and a keyboard-accessible reopen control.
+- Add regression coverage for pending-decision precedence and ensure automated checks remain green.
+- Complete manual browser checks for responsive layout, keyboard navigation, persistence, offline return, reset, pending decision recovery, and a fresh 5-15 minute session.
+
+**Deliverables:**
+
+- Non-blocking decision interaction with documented defer/reopen behavior.
+- Updated accessibility behavior for decision controls.
+- Release QA checklist and results.
+
+**Exit criteria:**
+
+- A pending decision never prevents resource, task, generator, fuel, upgrade, or report-card controls from being used.
+- Deferring a decision leaves it pending and makes it discoverable through the reopen control.
+- Keyboard users can reach choices and defer the decision without a pointer.
+- `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build` pass.
+
+**Batch status:** Implementation complete. Automated checks are tracked below; real-browser visual and persistence checks remain manual because this repository has no browser test runner.
 
 ### Phase 6: Legacy Prestige and Post-MVP Expansion
 
