@@ -421,6 +421,82 @@ The next mechanics batch adds depth to the existing decision loop without introd
 
 **Current implementation status:** Phases 7-11 are implemented in the browser game and covered by automated state, simulation, persistence, and UI-facing store tests. Real-browser QA remains intentionally deferred.
 
+### Phase 12: UI Component Extraction and Maintainability
+
+**Purpose:** Break the large game shell and dense UI sections into focused, reusable components without changing gameplay behavior, visual language, or state ownership.
+
+**Architecture rules:**
+
+- Components render state and dispatch store actions; simulation and progression rules remain in `lib/game`.
+- Each extracted component owns one visual responsibility and has a small, explicit prop surface where possible.
+- Shared display primitives should not know about Convoy-specific game rules.
+- Keep the existing responsive layout and accessibility semantics unchanged during extraction.
+- Prefer composition through props over duplicating `useGameStore()` subscriptions in deeply nested components.
+
+**Phase 12.1: Shared Display Primitives**
+
+- Extract `ResourceStat` from `game-shell.tsx` into `resource-stat.tsx`.
+- Extract the warning row into `game-warning-bar.tsx`.
+- Add shared primitives for section headings, progress bars, and compact value rows only where at least two panels use the same structure.
+- Keep number formatting and tone classes centralized rather than redefining them in each panel.
+
+**Phase 12.2: Shell and Header**
+
+- Extract the top header into `game-header.tsx`.
+- Extract the resource strip into `resource-bar.tsx`.
+- Extract reset confirmation into `reset-journey-dialog.tsx`.
+- Keep hydration/loading behavior and the game-loop activation in `game-shell.tsx`.
+
+**Phase 12.3: Gameplay Panels**
+
+- Split `task-panel.tsx` into `character-task-row.tsx` and a task-panel container.
+- Split `generator-panel.tsx` into generator list, generator card, purchase quantity control, and generator progress components.
+- Split `fuel-panel.tsx` into fuel summary, refill controls, and purchase feedback components.
+- Split `upgrade-panel.tsx` and `interior-panel.tsx` into reusable upgrade card/action components where their contracts match.
+- Keep all action result handling at the panel/container boundary so feedback remains consistent.
+
+**Phase 12.4: Decisions and Progression**
+
+- Split `decision-dialogs.tsx` into decision surface, decision choice, pending-decision trigger, and focus behavior helpers.
+- Split `journey-objective.tsx` into objective progress, current-route summary, and settlement route-choice sections.
+- Split `report-card.tsx` into score summary and family-memory list.
+- Split `legacy-panel.tsx` into Legacy summary and prestige action sections.
+- Preserve non-blocking decision behavior and keyboard interactions from Phase 5.1.
+
+**Phase 12.5: Scene and Audio Boundaries**
+
+- Split `convoy-scene.tsx` into background layers, vehicle shell, character actor, and speech-bubble components.
+- Keep scene animation state derived from game state; do not move simulation logic into visual actors.
+- Keep `audio-controller.tsx` as the browser side-effect boundary, extracting only control presentation if it improves readability.
+
+**Phase 12.6: Verification and Cleanup**
+
+- Add component-level tests only for non-trivial rendering branches and keyboard interactions; keep formula coverage in `lib/game` tests.
+- Verify no component introduces duplicated game state or subscriptions that disagree with the store.
+- Run lint, typecheck, production build, and existing unit tests after each extraction batch.
+- Complete manual responsive and keyboard QA after the full extraction.
+- Remove only obsolete local helpers and imports; avoid unrelated styling or naming changes.
+
+**Deliverables:**
+
+- A thin `game-shell.tsx` responsible for composition, hydration, loop startup, and page-level layout.
+- Focused Convoy components with clear names and maintainable file sizes.
+- Shared UI primitives used consistently across panels.
+- No gameplay behavior changes.
+
+**Exit criteria:**
+
+- `game-shell.tsx` contains composition and page orchestration, not detailed panel markup.
+- Each extracted component has one primary responsibility and a testable boundary.
+- Existing automated tests and production checks pass unchanged.
+- Desktop/mobile layout and decision keyboard behavior remain equivalent to the pre-extraction implementation.
+
+**Recommended execution order:** Phase 12.1, Phase 12.2, Phase 12.3, Phase 12.4, Phase 12.5, Phase 12.6. Commit each batch separately so UI regressions can be isolated.
+
+**Current implementation status:** Phase 12.1 through 12.5 are implemented, including separate car, scenery, vehicle actor, generator card, task row, objective, route-choice, memory, header, resource, warning, and reset-dialog components. Phase 12.6 verification is in progress; behavior and styling are intentionally unchanged.
+
+**Component directory convention:** Convoy UI is grouped under `components/convoy` by responsibility: `layout/` for shell and page chrome, `scene/` for scenery and vehicle actors, `panels/` for gameplay controls, `progression/` for objectives/report/Legacy, `dialogs/` for decision and reset surfaces, and `feedback/` for audio/offline feedback. Shared shadcn primitives remain in `components/ui/`.
+
 ## 5. Core Rules to Implement
 
 ### Resource and Cycle Simulation
