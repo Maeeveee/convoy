@@ -27,6 +27,7 @@ import { ReportCard } from "./report-card"
 import { AudioController } from "./audio-controller"
 import { InteriorPanel } from "./interior-panel"
 import { LegacyPanel } from "./legacy-panel"
+import { JourneyObjective } from "./journey-objective"
 
 const number = new Intl.NumberFormat("en", { maximumFractionDigits: 1 })
 
@@ -167,6 +168,7 @@ export function GameShell() {
             <UpgradePanel />
             <InteriorPanel />
             <LegacyPanel />
+            <JourneyObjective />
             <ReportCard />
           </aside>
         </div>

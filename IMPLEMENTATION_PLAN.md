@@ -324,6 +324,103 @@ Current Phase 6 preparation includes browser-safe playback for `road-sound.mp3`,
 
 The scene interaction pass adds assignment-driven walking/work states, family meeting poses for events and night rituals, and contextual speech bubbles.
 
+## 9. Mechanics Expansion Plan
+
+The next mechanics batch adds depth to the existing decision loop without introducing manual driving, free exploration, or a second resource economy. Each phase is independently testable and builds on the previous phase.
+
+### Phase 7: Character Energy and Task Trade-offs
+
+**Purpose:** Make character assignments meaningful over time and give the existing `rest` task a real strategic role.
+
+**Work items:**
+
+- Consume character energy while working and recover it while resting.
+- Scale task effectiveness through high, normal, low, and exhausted energy bands.
+- Apply task-specific costs and benefits: repair/trade/connect improve production or bond while consuming energy; drive protects travel; rest restores energy and bond.
+- Show each character's energy, current task effect, and tired state in the task panel and scene.
+- Persist energy through the versioned save schema and test clamping, recovery, and output penalties.
+
+**Exit criteria:**
+
+- Energy changes deterministically from elapsed time.
+- Exhausted characters cannot silently provide full task bonuses.
+- Resting is a viable alternative to continuous production.
+
+### Phase 8: Short-term Journey Objectives
+
+**Purpose:** Give active players a reason to make a decision during each short session.
+
+**Work items:**
+
+- Define a small deterministic roster of objectives based on credits, distance, fuel discipline, bond, and upgrades.
+- Track one active objective, progress, completion, and reward claim state.
+- Show objective progress and the next reward in the main decision interface.
+- Resolve objective rewards atomically and write a memory entry when an objective is completed.
+- Persist objective state and test progress across ticks, reloads, and offline processing.
+
+**Exit criteria:**
+
+- A fresh run receives an understandable objective.
+- Objectives complete through normal play rather than requiring special hidden actions.
+- Rewards cannot be claimed twice.
+
+### Phase 9: Route Selection
+
+**Purpose:** Turn distance into an occasional strategic choice while preserving automatic vehicle movement.
+
+**Work items:**
+
+- Add Safe, Ruins, and Community route profiles with distinct fuel, credit, distance, bond, and event-risk modifiers.
+- Offer route selection at settlement decisions and allow the current route to be inspected between decisions.
+- Apply route modifiers in the simulation and event scheduler without changing generator ownership rules.
+- Add route consequences to the decision UI and tests for switching, persistence, and fuel depletion.
+
+**Exit criteria:**
+
+- Each route has a visible trade-off rather than a dominant best choice.
+- The player never manually steers or controls movement.
+- Route state survives reload and offline progress.
+
+### Phase 10: Settlement Milestones
+
+**Purpose:** Give distance a readable sense of place and create a natural cadence for route decisions.
+
+**Work items:**
+
+- Define named settlements at deterministic distance thresholds.
+- Queue one settlement arrival at a time when a threshold is crossed.
+- Give each arrival a small reward and a route choice with no duplicate rewards after reload.
+- Show the current settlement progress in the resource header and scene.
+- Record arrivals as family memories and test threshold crossing, pending precedence, and recovery.
+
+**Exit criteria:**
+
+- Distance produces recognizable milestones beyond a score increase.
+- Settlement rewards are atomic and idempotent.
+- A pending settlement never spams or replaces an unresolved event/night decision.
+
+### Phase 11: Family Memory Log
+
+**Purpose:** Make the family story persist through the player's decisions without requiring branching cutscenes.
+
+**Work items:**
+
+- Add a bounded chronological memory log for resolved events, night choices, objectives, routes, and settlements.
+- Display the latest memories in the report card with a readable empty state.
+- Use concise authored text with dynamic values only where useful.
+- Persist and validate the log, trimming old entries deterministically.
+- Add tests for ordering, limits, save round trips, and reset/prestige behavior.
+
+**Exit criteria:**
+
+- Important decisions leave a visible trace in the journey report.
+- The log remains small enough for localStorage and readable on mobile.
+- Reset starts a new journey log while Legacy persists across prestige.
+
+**Recommended execution order:** Phase 7, Phase 8, Phase 9, Phase 10, Phase 11. Run automated checks after each phase and complete the existing real-browser QA batch after all five phases.
+
+**Current implementation status:** Phases 7-11 are implemented in the browser game and covered by automated state, simulation, persistence, and UI-facing store tests. Real-browser QA remains intentionally deferred.
+
 ## 5. Core Rules to Implement
 
 ### Resource and Cycle Simulation

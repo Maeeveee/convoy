@@ -22,10 +22,10 @@ describe("simulation", () => {
       2_000,
     )
 
-    expect(next.resources.fuel).toBeCloseTo(59.7)
+    expect(next.resources.fuel).toBeCloseTo(59.73)
     expect(next.resources.credits).toBeCloseTo(156.16, 2)
-    expect(next.distance).toBeCloseTo(0.8)
-    expect(next.bond).toBeCloseTo(62.08)
+    expect(next.distance).toBeCloseTo(0.72)
+    expect(next.bond).toBeCloseTo(62.085)
     expect(next.lastSeenTimestamp).toBe(2_000)
   })
 
@@ -93,5 +93,22 @@ describe("simulation", () => {
     const next = simulate(initial, 9, 9_000)
     expect(next.resources.credits).toBe(initial.resources.credits)
     expect(next.generators.fatherToolkit.cycleProgressSeconds).toBe(9)
+  })
+
+  it("reduces production when a working character is exhausted", () => {
+    const initial = createInitialState(0)
+    const base = { ...initial, generators: { ...initial.generators, fatherToolkit: { ...initial.generators.fatherToolkit, owned: 1 } } }
+    const rested = simulate({ ...base, characters: { ...base.characters, mother: { ...base.characters.mother, energy: 10, task: "trade" } } }, 10, 10_000)
+    const fresh = simulate({ ...base, characters: { ...base.characters, mother: { ...base.characters.mother, energy: 100, task: "trade" } } }, 10, 10_000)
+
+    expect(rested.characters.mother.energy).toBeLessThan(10)
+    expect(rested.resources.credits).toBeLessThan(fresh.resources.credits)
+  })
+
+  it("recovers energy while resting", () => {
+    const initial = createInitialState(0)
+    const next = simulate({ ...initial, characters: { ...initial.characters, father: { ...initial.characters.father, energy: 20, task: "rest" } } }, 10, 10_000)
+
+    expect(next.characters.father.energy).toBe(20.8)
   })
 })

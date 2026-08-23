@@ -35,6 +35,22 @@ describe("persistence", () => {
     expect(loaded?.fuelPurchases).toBe(4)
   })
 
+  it("round trips mechanics expansion state", () => {
+    const initial = createInitialState(1_000)
+    const state = {
+      ...initial,
+      route: "community" as const,
+      memories: [{ id: "memory-1", text: "The family shared a quiet meal.", elapsedSeconds: 12 }],
+      objective: { id: "keepMoving" as const, progress: 4, completed: false },
+    }
+
+    expect(deserializeState(serializeState(state))).toMatchObject({
+      route: "community",
+      memories: state.memories,
+      objective: state.objective,
+    })
+  })
+
   it("falls back to a new state for malformed or unsupported saves", () => {
     const storage = new MemoryStorage()
     storage.setItem("convoy-save", "not-json")

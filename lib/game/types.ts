@@ -19,6 +19,9 @@ export type InteriorUpgradeId = "emergencySetup" | "semiLivable" | "comfortableC
 export type BondPair = "fatherMother" | "fatherChild" | "motherChild"
 export type EventId = "roadsideMarket" | "looseBelt" | "radioDistress" | "waterTower" | "nightWatch" | "strangerChild" | "emptyTank"
 export type EventTrigger = "scheduled" | "lowFuel" | "emptyFuel" | "openPickup" | "lowBond"
+export type RouteId = "safe" | "ruins" | "community"
+export type ObjectiveId = "firstExchange" | "keepMoving" | "holdTogether" | "keepReserve"
+export type SettlementId = "junction" | "waterline" | "greenhouse"
 
 export type Resources = Record<ResourceKey, number>
 
@@ -26,6 +29,18 @@ export type CharacterState = {
   id: CharacterId
   task: TaskId
   energy: number
+}
+
+export type ObjectiveState = {
+  id: ObjectiveId
+  progress: number
+  completed: boolean
+}
+
+export type FamilyMemory = {
+  id: string
+  text: string
+  elapsedSeconds: number
 }
 
 export type GeneratorState = {
@@ -69,6 +84,12 @@ export type GameState = {
   pendingEvent: EventId | null
   pendingNightDay: number | null
   fuelPurchases: number
+  route: RouteId
+  objective: ObjectiveState
+  objectiveIndex: number
+  pendingSettlement: SettlementId | null
+  nextSettlementIndex: number
+  memories: FamilyMemory[]
 }
 
 export type PersistedGameState = Omit<GameState, "capacities">

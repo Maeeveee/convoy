@@ -89,4 +89,33 @@ describe("progression transactions", () => {
     expect(useGameStore.getState().pendingEvent).toBeNull()
     expect(useGameStore.getState().pendingNightDay).toBe(2)
   })
+
+  it("completes the first objective and records a memory", () => {
+    useGameStore.getState().reset()
+    useGameStore.setState((state) => ({
+      totalCreditsGenerated: 494,
+      resources: { ...state.resources, credits: 640 },
+      generators: {
+        ...state.generators,
+        fatherToolkit: { ...state.generators.fatherToolkit, owned: 1, cycleProgressSeconds: 9 },
+      },
+    }))
+
+    useGameStore.getState().tick(10)
+
+    expect(useGameStore.getState().objective.id).toBe("keepMoving")
+    expect(useGameStore.getState().memories.at(-1)?.text).toContain("Make the next exchange")
+  })
+
+  it("opens a settlement and applies the chosen route reward", () => {
+    useGameStore.getState().reset()
+    useGameStore.setState((state) => ({ distance: 49.5, resources: { ...state.resources, fuel: 50 } }))
+
+    useGameStore.getState().tick(10)
+    expect(useGameStore.getState().pendingSettlement).toBe("junction")
+
+    expect(useGameStore.getState().chooseRoute("ruins")).toEqual({ ok: true })
+    expect(useGameStore.getState().route).toBe("ruins")
+    expect(useGameStore.getState().memories.at(-1)?.text).toContain("ruins road")
+  })
 })

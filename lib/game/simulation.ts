@@ -4,6 +4,8 @@ import {
   DAY_DURATION_SECONDS,
   GENERATORS,
   MAX_ACTIVE_TICK_SECONDS,
+  ENERGY_COST_PER_SECOND,
+  ROUTES,
 } from "./constants"
 import { generatorCycleSeconds } from "./generators"
 import type { GameState, ResourceKey } from "./types"
@@ -12,21 +14,20 @@ const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max)
 
 function taskModifiers(state: GameState) {
+  const energyModifier = (character: GameState["characters"][keyof GameState["characters"]]) =>
+    character.energy >= 60 ? 1 : character.energy >= 25 ? 0.75 : 0.4
   return {
     credits:
-      (state.characters.father.task === "repair" ? 1.35 : 1) *
-      (state.characters.mother.task === "trade" ? 1.4 : 1) *
-      (state.characters.child.task === "connect" ? 1.1 : 1),
-    fuel: 1,
+      (state.characters.father.task === "repair" ? 1 + 0.35 * energyModifier(state.characters.father) : 1) *
+      (state.characters.mother.task === "trade" ? 1 + 0.4 * energyModifier(state.characters.mother) : 1) *
+      (state.characters.child.task === "connect" ? 1 + 0.1 * energyModifier(state.characters.child) : 1) *
+      ROUTES[state.route].creditMultiplier,
+    fuel: ROUTES[state.route].fuelMultiplier,
   }
 }
 
 export function creditCycleMultiplier(state: GameState) {
-  return (
-    (state.characters.father.task === "repair" ? 1.35 : 1) *
-    (state.characters.mother.task === "trade" ? 1.4 : 1) *
-    (state.characters.child.task === "connect" ? 1.1 : 1)
-  )
+  return taskModifiers(state).credits
 }
 
 export function creditOutputPerCycle(state: GameState, owned: number, baseOutput: number) {
@@ -103,26 +104,32 @@ export function simulateElapsed(
 
   const cycled = applyGeneratorCycles(state, productionSeconds)
   const fuel = clamp(
-    cycled.resources.fuel - BASE_CONSUMPTION_PER_SECOND.fuel * seconds,
+    cycled.resources.fuel - BASE_CONSUMPTION_PER_SECOND.fuel * seconds * taskModifiers(state).fuel,
     0,
     state.capacities.fuel,
   )
   const fuelFactor = state.resources.fuel > 0 ? 1 : 0
-  const distance =
-    state.distance + BASE_DISTANCE_PER_SECOND * fuelFactor * productionSeconds
+  const distance = state.distance + BASE_DISTANCE_PER_SECOND * fuelFactor * productionSeconds * ROUTES[state.route].distanceMultiplier
   const childConnecting = state.characters.child.task === "connect"
   const restingCount = Object.values(state.characters).filter(
     (character) => character.task === "rest",
   ).length
   const bondDelta =
-    (childConnecting ? 0.008 : -0.002) * seconds + restingCount * 0.001 * seconds
+    ((childConnecting ? 0.008 : -0.002) + ROUTES[state.route].bondDelta) * seconds + restingCount * 0.001 * seconds
   const elapsedTotal = state.elapsedSeconds + seconds
   const pairDelta = bondDelta * 0.8
+  const characters = Object.fromEntries(
+    Object.entries(state.characters).map(([id, character]) => [
+      id,
+      { ...character, energy: clamp(character.energy - ENERGY_COST_PER_SECOND[character.task] * seconds, 0, 100) },
+    ]),
+  ) as GameState["characters"]
 
   return {
     ...state,
     resources: { ...cycled.resources, fuel },
     generators: cycled.generators,
+    characters,
     distance,
     bond: clamp(state.bond + bondDelta, 0, 100),
     pairBonds: {

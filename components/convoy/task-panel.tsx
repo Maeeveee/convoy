@@ -32,7 +32,7 @@ export function TaskPanel() {
       <div className="space-y-3">
         {(Object.keys(characterNames) as CharacterId[]).map((id) => (
           <label key={id} className="grid grid-cols-[75px_1fr] items-center gap-3 text-sm">
-            <span className="font-semibold">{characterNames[id]}</span>
+            <span className="font-semibold">{characterNames[id]}<small className={`mt-0.5 block text-[10px] font-normal ${characters[id].energy < 25 ? "text-[#9e4f37]" : "text-black/50 dark:text-white/45"}`}>{Math.round(characters[id].energy)} energy</small></span>
             <select
               value={characters[id].task}
               onChange={(event) => assignTask(id, event.target.value as TaskId)}

@@ -1,11 +1,15 @@
 import {
   CHARACTER_IDS,
   EXTERIOR_BY_LEVEL,
+  INTERIOR_BY_LEVEL,
   GENERATORS,
   INITIAL_CAPACITIES,
   MAX_OFFLINE_SECONDS,
   OFFLINE_MULTIPLIER,
   SAVE_VERSION,
+  OBJECTIVES,
+  ROUTES,
+  SETTLEMENTS,
 } from "./constants"
 import { simulateElapsed } from "./simulation"
 import { eventById } from "./events"
@@ -47,8 +51,14 @@ function isValidSave(value: unknown): value is PersistedGameState {
     (typeof save.pendingEvent !== "string" || !eventById(save.pendingEvent))
   ) return false
   if (save.pendingNightDay !== null && (!isFiniteNumber(save.pendingNightDay) || save.pendingNightDay < 1)) return false
-  if (!save.interior || !save.pairBonds || !save.meta) return false
+  if (!save.interior || !save.pairBonds || !save.meta || !save.objective || !save.route || !save.memories) return false
   if (save.interior.level < 1 || save.interior.level > 3) return false
+  if (save.interior.id !== INTERIOR_BY_LEVEL[save.interior.level - 1]) return false
+  if (!(save.route in ROUTES) || !Number.isInteger(save.objectiveIndex) || (save.objectiveIndex ?? -1) < 0) return false
+  if (!(save.objective.id in OBJECTIVES) || !isFiniteNumber(save.objective.progress) || save.objective.progress < 0 || typeof save.objective.completed !== "boolean") return false
+  if (save.pendingSettlement !== null && save.pendingSettlement !== undefined && !(save.pendingSettlement in SETTLEMENTS)) return false
+  if (!Number.isInteger(save.nextSettlementIndex) || (save.nextSettlementIndex ?? -1) < 0) return false
+  if (!Array.isArray(save.memories) || save.memories.length > 12 || save.memories.some((memory) => !memory || typeof memory.id !== "string" || typeof memory.text !== "string" || !isFiniteNumber(memory.elapsedSeconds))) return false
   if (Object.values(save.pairBonds).some((value) => !isFiniteNumber(value) || value < 0 || value > 100)) return false
   if (!isFiniteNumber(save.bondSum) || save.bondSum < 0 || !isFiniteNumber(save.bondSampleSeconds) || save.bondSampleSeconds < 0) return false
   if (!isFiniteNumber(save.totalCreditsGenerated) || save.totalCreditsGenerated < 0) return false
@@ -136,6 +146,12 @@ export function toPersistedState(state: GameState): PersistedGameState {
     bondSampleSeconds: state.bondSampleSeconds,
     totalCreditsGenerated: state.totalCreditsGenerated,
     meta: state.meta,
+    route: state.route,
+    objective: state.objective,
+    objectiveIndex: state.objectiveIndex,
+    pendingSettlement: state.pendingSettlement,
+    nextSettlementIndex: state.nextSettlementIndex,
+    memories: state.memories,
   }
 }
 

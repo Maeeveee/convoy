@@ -4,9 +4,12 @@ import type {
   GeneratorId,
   InteriorUpgradeId,
   TaskId,
+  ObjectiveId,
+  RouteId,
+  SettlementId,
 } from "./types"
 
-export const SAVE_VERSION = 4
+export const SAVE_VERSION = 5
 export const LEGACY_THRESHOLD = 10_000
 export const DAY_DURATION_SECONDS = 5 * 60
 export const MAX_ACTIVE_TICK_SECONDS = 10
@@ -44,6 +47,36 @@ export const TASKS: Record<TaskId, { label: string; description: string }> = {
   connect: { label: "Reach out", description: "Improves credits and bond." },
   rest: { label: "Rest", description: "Recovers energy and protects bond." },
 }
+
+export const ENERGY_COST_PER_SECOND: Record<TaskId, number> = {
+  drive: 0.012,
+  repair: 0.032,
+  trade: 0.026,
+  connect: 0.02,
+  rest: -0.08,
+}
+
+export const ROUTES: Record<RouteId, { label: string; description: string; fuelMultiplier: number; creditMultiplier: number; distanceMultiplier: number; bondDelta: number; eventMultiplier: number }> = {
+  safe: { label: "Safe road", description: "Reliable ground with fewer surprises.", fuelMultiplier: 0.9, creditMultiplier: 1, distanceMultiplier: 0.9, bondDelta: 0.0005, eventMultiplier: 0.75 },
+  ruins: { label: "Through the ruins", description: "More salvage, more fuel use, more danger.", fuelMultiplier: 1.25, creditMultiplier: 1.25, distanceMultiplier: 1.15, bondDelta: -0.0005, eventMultiplier: 1.3 },
+  community: { label: "Community road", description: "Slower travel with people willing to help.", fuelMultiplier: 1, creditMultiplier: 1, distanceMultiplier: 0.8, bondDelta: 0.002, eventMultiplier: 0.9 },
+}
+
+export const OBJECTIVES: Record<ObjectiveId, { label: string; description: string; target: number; rewardCredits?: number; rewardFuel?: number; rewardBond?: number }> = {
+  firstExchange: { label: "Make the next exchange", description: "Generate 500 Trade Credits.", target: 500, rewardCredits: 150 },
+  keepMoving: { label: "Keep moving", description: "Travel 30 km.", target: 30, rewardFuel: 15 },
+  holdTogether: { label: "Hold together", description: "Raise Family Bond to 75.", target: 75, rewardCredits: 100, rewardBond: 3 },
+  keepReserve: { label: "Keep a reserve", description: "Reach 80 Fuel without running dry.", target: 80, rewardFuel: 10 },
+}
+
+export const OBJECTIVE_ORDER: ObjectiveId[] = ["firstExchange", "keepMoving", "holdTogether", "keepReserve"]
+export const SETTLEMENTS: Record<SettlementId, { label: string; threshold: number; rewardCredits: number; rewardFuel: number }> = {
+  junction: { label: "The old junction", threshold: 50, rewardCredits: 120, rewardFuel: 8 },
+  waterline: { label: "Waterline settlement", threshold: 150, rewardCredits: 300, rewardFuel: 15 },
+  greenhouse: { label: "The greenhouse", threshold: 300, rewardCredits: 700, rewardFuel: 25 },
+}
+export const SETTLEMENT_ORDER: SettlementId[] = ["junction", "waterline", "greenhouse"]
+export const MAX_MEMORIES = 12
 
 export const GENERATORS: Record<
   GeneratorId,

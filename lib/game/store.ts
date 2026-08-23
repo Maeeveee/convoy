@@ -9,6 +9,12 @@ import {
   INITIAL_CAPACITIES,
   INITIAL_RESOURCES,
   SAVE_VERSION,
+  MAX_MEMORIES,
+  OBJECTIVE_ORDER,
+  OBJECTIVES,
+  SETTLEMENT_ORDER,
+  SETTLEMENTS,
+  ROUTES,
 } from "./constants"
 import { bulkGeneratorPrice, resolvePurchaseQuantity } from "./generators"
 import { buyExteriorUpgrade, buyInteriorUpgrade, legacyReward } from "./progression"
@@ -22,6 +28,7 @@ import type {
   OfflineSummary,
   PurchaseQuantity,
   TaskId,
+  RouteId,
 } from "./types"
 
 export type GameStore = GameState & {
@@ -40,6 +47,7 @@ export type GameStore = GameState & {
   buyFuel: (amount: number) => ActionResult
   resolveEvent: (choiceId: string) => ActionResult
   resolveNight: (choiceId: string) => ActionResult
+  chooseRoute: (route: RouteId) => ActionResult
   prestige: () => ActionResult
   reset: () => void
 }
@@ -73,6 +81,12 @@ export function createInitialState(now = Date.now()): GameState {
     pendingEvent: null,
     pendingNightDay: null,
     fuelPurchases: 0,
+    route: "safe",
+    objective: { id: OBJECTIVE_ORDER[0], progress: 0, completed: false },
+    objectiveIndex: 0,
+    pendingSettlement: null,
+    nextSettlementIndex: 0,
+    memories: [],
   }
 }
 
@@ -84,6 +98,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set((state) => {
       const next = simulate(state, elapsedSeconds)
       const crossedDay = next.day > state.day
+      const nextWithTotals = {
+        ...next,
+        totalCreditsGenerated: state.totalCreditsGenerated + Math.max(next.resources.credits - state.resources.credits, 0),
+      }
+      const objectiveResult = updateObjective(state, nextWithTotals)
+      const settlement = SETTLEMENT_ORDER[state.nextSettlementIndex]
+      const reachedSettlement = Boolean(
+        settlement &&
+          !state.pendingEvent &&
+          !state.pendingNightDay &&
+          !state.pendingSettlement &&
+          next.distance >= SETTLEMENTS[settlement].threshold &&
+          state.distance < SETTLEMENTS[settlement].threshold,
+      )
       const timer = state.eventTimerSeconds + elapsedSeconds
       const trigger =
         next.resources.fuel <= 0
@@ -98,16 +126,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const shouldEvent =
         !state.pendingEvent &&
         !state.pendingNightDay &&
-        (timer >= EVENT_INTERVAL_SECONDS ||
-          (trigger !== "scheduled" && timer >= EVENT_COOLDOWN_SECONDS))
+        !state.pendingSettlement &&
+        !reachedSettlement &&
+        (timer >= EVENT_INTERVAL_SECONDS * ROUTES[next.route].eventMultiplier ||
+          (trigger !== "scheduled" && timer >= EVENT_COOLDOWN_SECONDS * ROUTES[next.route].eventMultiplier))
       return {
-        ...next,
+        ...nextWithTotals,
         eventTimerSeconds: shouldEvent ? 0 : timer,
         pendingEvent: shouldEvent ? chooseEvent(next, trigger).id : state.pendingEvent,
         pendingNightDay: crossedDay ? next.day : state.pendingNightDay,
+        pendingSettlement: reachedSettlement ? settlement : state.pendingSettlement,
+        objective: objectiveResult.objective,
+        objectiveIndex: objectiveResult.objectiveIndex,
+        resources: {
+          ...next.resources,
+          credits: next.resources.credits + objectiveResult.rewardCredits,
+          fuel: Math.min(next.capacities.fuel, next.resources.fuel + objectiveResult.rewardFuel),
+        },
+        bond: Math.min(100, next.bond + objectiveResult.rewardBond),
+        memories: [...next.memories, ...objectiveResult.memories].slice(-MAX_MEMORIES),
         bondSum: state.bondSum + next.bond * elapsedSeconds,
         bondSampleSeconds: state.bondSampleSeconds + elapsedSeconds,
-        totalCreditsGenerated: state.totalCreditsGenerated + Math.max(next.resources.credits - state.resources.credits, 0),
+        totalCreditsGenerated: nextWithTotals.totalCreditsGenerated,
       }
     }),
   hydrate: (state, summary) =>
@@ -204,6 +244,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       },
       bond: Math.min(Math.max(state.bond + (choice.bond ?? 0), 0), 100),
       pendingEvent: null,
+      memories: addMemory(state, `The family chose: ${choice.label}.`),
       lastSeenTimestamp: Date.now(),
     })
     return { ok: true }
@@ -220,10 +261,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
       },
       bond: Math.min(Math.max(state.bond + (choice.bond ?? 0), 0), 100),
       pendingNightDay: null,
+      memories: addMemory(state, `The family chose: ${choice.label}.`),
       lastSeenTimestamp: Date.now(),
     })
     return { ok: true }
   },
+  chooseRoute: (route: RouteId) => {
+    const state = get()
+    if (!state.pendingSettlement) return { ok: false, reason: "No settlement is waiting." }
+    const settlement = SETTLEMENTS[state.pendingSettlement]
+    set({
+      route,
+      pendingSettlement: null,
+      resources: {
+        ...state.resources,
+        credits: state.resources.credits + settlement.rewardCredits,
+        fuel: Math.min(state.capacities.fuel, state.resources.fuel + settlement.rewardFuel),
+      },
+      nextSettlementIndex: state.nextSettlementIndex + 1,
+      memories: addMemory(state, `The family reached ${settlement.label} and took the ${ROUTE_LABELS[route].toLowerCase()}.`),
+      lastSeenTimestamp: Date.now(),
+    })
+    return { ok: true }
+  },
+
   prestige: () => {
     const state = get()
     const earned = legacyReward(state)
@@ -240,3 +301,34 @@ export const useGameStore = create<GameStore>((set, get) => ({
   reset: () =>
     set({ ...createInitialState(), isHydrated: true, offlineSummary: null }),
 }))
+
+const ROUTE_LABELS: Record<RouteId, string> = { safe: "Safe road", ruins: "Ruins road", community: "Community road" }
+
+function addMemory(state: GameState, text: string) {
+  return [...state.memories, { id: `${Date.now()}-${state.memories.length}`, text, elapsedSeconds: state.elapsedSeconds }].slice(-MAX_MEMORIES)
+}
+
+function updateObjective(state: GameState, next: GameState) {
+  const definition = OBJECTIVES[state.objective.id]
+  const progress = Math.min(definition.target, objectiveProgress(state.objective.id, state, next))
+  if (state.objective.completed || progress < definition.target) {
+    return { objective: { ...state.objective, progress }, objectiveIndex: state.objectiveIndex, rewardCredits: 0, rewardFuel: 0, rewardBond: 0, memories: [] }
+  }
+  const nextIndex = state.objectiveIndex + 1
+  const nextId = OBJECTIVE_ORDER[nextIndex % OBJECTIVE_ORDER.length]
+  return {
+    objective: { id: nextId, progress: 0, completed: false },
+    objectiveIndex: nextIndex,
+    rewardCredits: definition.rewardCredits ?? 0,
+    rewardFuel: definition.rewardFuel ?? 0,
+    rewardBond: definition.rewardBond ?? 0,
+    memories: [{ id: `objective-${nextIndex}`, text: `The family completed: ${definition.label}.`, elapsedSeconds: next.elapsedSeconds }],
+  }
+}
+
+function objectiveProgress(id: GameState["objective"]["id"], before: GameState, after: GameState) {
+  if (id === "firstExchange") return after.totalCreditsGenerated
+  if (id === "keepMoving") return after.distance
+  if (id === "holdTogether") return after.bond
+  return after.resources.fuel
+}
