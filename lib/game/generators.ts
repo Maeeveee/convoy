@@ -56,6 +56,23 @@ export function nextGeneratorMilestoneQuantity(owned: number): number {
   return Math.max(nextGeneratorMilestone(owned) - owned, 0)
 }
 
+export function generatorMilestonesReached(previousOwned: number, owned: number): number[] {
+  const milestones: number[] = GENERATOR_MILESTONES.filter(
+    (milestone) => previousOwned < milestone && owned >= milestone,
+  )
+  const lastMilestone = GENERATOR_MILESTONES.at(-1) ?? 0
+  if (owned > lastMilestone) {
+    for (
+      let milestone = lastMilestone + GENERATOR_MILESTONE_GROWTH;
+      milestone <= owned;
+      milestone += GENERATOR_MILESTONE_GROWTH
+    ) {
+      if (previousOwned < milestone) milestones.push(milestone)
+    }
+  }
+  return milestones
+}
+
 export function generatorMilestoneMultiplier(owned: number): number {
   if (owned < GENERATOR_MILESTONES[0]) return 1
 
@@ -137,6 +154,15 @@ export function allGeneratorsMilestoneRows(state: GameState, upcomingCount = 3) 
       speedMultiplier: ALL_GENERATORS_SPEED_MULTIPLIER ** Math.floor(count / 2),
     }
   })
+}
+
+export function allGeneratorsMilestonesReached(
+  previousState: GameState,
+  state: GameState,
+ ) {
+  const previousCount = allGeneratorsMilestoneCount(previousState)
+  return allGeneratorsMilestoneRows(state, 0)
+    .filter((milestone, index) => index >= previousCount && milestone.unlocked)
 }
 
 export function resolvePurchaseQuantity(

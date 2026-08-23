@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest"
 import { createInitialState } from "../store"
 import {
   affordableGeneratorQuantity,
+  allGeneratorsMilestonesReached,
   allGeneratorsMilestoneCount,
   allGeneratorsMilestoneRows,
   allGeneratorsOutputMultiplier,
   allGeneratorsSpeedMultiplier,
   bulkGeneratorPrice,
   generatorMilestoneMultiplier,
+  generatorMilestonesReached,
   generatorPrice,
   hasOwnedAllGenerators,
   nextGeneratorMilestone,
@@ -98,5 +100,28 @@ describe("generator pricing", () => {
     expect(rows.map((row) => row.threshold)).toEqual([1, 25, 50, 100, 200])
     expect(rows[1]).toMatchObject({ unlocked: true, bonusType: "speed", speedMultiplier: 2 })
     expect(rows[2]).toMatchObject({ unlocked: false, bonusType: "output", outputMultiplier: 2.25 })
+  })
+
+  it("reports every individual milestone crossed by a bulk purchase", () => {
+    expect(generatorMilestonesReached(24, 101)).toEqual([25, 50, 100])
+    expect(generatorMilestonesReached(199, 301)).toEqual([200, 300])
+  })
+
+  it("reports all-generator buffs unlocked by a purchase", () => {
+    const initial = createInitialState(0)
+    const at = (owned: number) => ({
+      ...initial,
+      generators: Object.fromEntries(
+        Object.entries(initial.generators).map(([id, generator]) => [
+          id,
+          { ...generator, owned },
+        ]),
+      ) as typeof initial.generators,
+    })
+
+    expect(allGeneratorsMilestonesReached(at(24), at(50))).toMatchObject([
+      { threshold: 25, bonusType: "speed" },
+      { threshold: 50, bonusType: "output" },
+    ])
   })
 })
