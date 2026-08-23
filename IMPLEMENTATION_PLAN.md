@@ -497,6 +497,10 @@ The next mechanics batch adds depth to the existing decision loop without introd
 
 **Component directory convention:** Convoy UI is grouped under `components/convoy` by responsibility: `layout/` for shell and page chrome, `scene/` for scenery and vehicle actors, `panels/` for gameplay controls, `progression/` for objectives/report/Legacy, `dialogs/` for decision and reset surfaces, and `feedback/` for audio/offline feedback. Shared shadcn primitives remain in `components/ui/`.
 
+### Phase 13: First-Run Onboarding
+
+**Status:** Implemented. New players receive a four-step field guide covering automatic travel, Fuel and Trade Credits, family assignments, and road decisions. The guide pauses active simulation, supports keyboard navigation, can be skipped, and stores completion separately from the game save. Returning saves bypass it.
+
 ## 5. Core Rules to Implement
 
 ### Resource and Cycle Simulation

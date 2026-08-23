@@ -11,12 +11,12 @@ import { useGameStore } from "@/lib/game/store"
 import { ConvoyScene } from "../scene"
 import { GeneratorPanel } from "../panels"
 import { LegacyPanel, ReportCard } from "../progression"
-import { DecisionDialogs } from "../dialogs"
+import { DecisionDialogs, OnboardingDialog } from "../dialogs"
 import { OfflineSummaryDialog } from "../feedback"
 import { GameHeader, GameWarningBar, ResourceBar } from "."
 
 export function GameShell() {
-  const { isHydrated } = useHydratedGame()
+  const { isHydrated, showOnboarding, completeOnboarding } = useHydratedGame()
   const resources = useGameStore((state) => state.resources)
   const capacities = useGameStore((state) => state.capacities)
   const bond = useGameStore((state) => state.bond)
@@ -24,7 +24,7 @@ export function GameShell() {
   const day = useGameStore((state) => state.day)
   const elapsedSeconds = useGameStore((state) => state.elapsedSeconds)
 
-  useGameLoop(isHydrated)
+  useGameLoop(isHydrated && !showOnboarding)
 
   if (!isHydrated) {
     return (
@@ -79,6 +79,7 @@ export function GameShell() {
 
       <OfflineSummaryDialog />
       <DecisionDialogs />
+      {showOnboarding && <OnboardingDialog onComplete={completeOnboarding} />}
 
     </main>
   )
