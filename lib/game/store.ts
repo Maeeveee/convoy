@@ -144,7 +144,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           fuel: Math.min(next.capacities.fuel, next.resources.fuel + objectiveResult.rewardFuel),
         },
         bond: Math.min(100, next.bond + objectiveResult.rewardBond),
-        memories: [...next.memories, ...objectiveResult.memories].slice(-MAX_MEMORIES),
+        memories: dedupeMemories([...next.memories, ...objectiveResult.memories]),
         bondSum: state.bondSum + next.bond * elapsedSeconds,
         bondSampleSeconds: state.bondSampleSeconds + elapsedSeconds,
         totalCreditsGenerated: nextWithTotals.totalCreditsGenerated,
@@ -153,6 +153,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hydrate: (state, summary) =>
     set({
       ...state,
+      memories: dedupeMemories(state.memories),
       isHydrated: true,
       offlineSummary: summary.offlineSeconds > 1 ? summary : null,
     }),
@@ -305,7 +306,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
 const ROUTE_LABELS: Record<RouteId, string> = { safe: "Safe road", ruins: "Ruins road", community: "Community road" }
 
 function addMemory(state: GameState, text: string) {
-  return [...state.memories, { id: `${Date.now()}-${state.memories.length}`, text, elapsedSeconds: state.elapsedSeconds }].slice(-MAX_MEMORIES)
+  return dedupeMemories([...state.memories, { id: `${Date.now()}-${state.elapsedSeconds}-${state.memories.length}`, text, elapsedSeconds: state.elapsedSeconds }])
+}
+
+function dedupeMemories(memories: GameState["memories"]) {
+  const seen = new Set<string>()
+  return memories
+    .filter((memory) => {
+      if (seen.has(memory.id)) return false
+      seen.add(memory.id)
+      return true
+    })
+    .slice(-MAX_MEMORIES)
 }
 
 function updateObjective(state: GameState, next: GameState) {
@@ -314,15 +326,25 @@ function updateObjective(state: GameState, next: GameState) {
   if (state.objective.completed || progress < definition.target) {
     return { objective: { ...state.objective, progress }, objectiveIndex: state.objectiveIndex, rewardCredits: 0, rewardFuel: 0, rewardBond: 0, memories: [] }
   }
+  if (state.objectiveIndex >= OBJECTIVE_ORDER.length - 1) {
+    return {
+      objective: { ...state.objective, progress, completed: true },
+      objectiveIndex: state.objectiveIndex,
+      rewardCredits: definition.rewardCredits ?? 0,
+      rewardFuel: definition.rewardFuel ?? 0,
+      rewardBond: definition.rewardBond ?? 0,
+      memories: [{ id: `objective-${state.objective.id}-${next.elapsedSeconds}`, text: `The family completed: ${definition.label}.`, elapsedSeconds: next.elapsedSeconds }],
+    }
+  }
   const nextIndex = state.objectiveIndex + 1
-  const nextId = OBJECTIVE_ORDER[nextIndex % OBJECTIVE_ORDER.length]
+  const nextId = OBJECTIVE_ORDER[nextIndex]
   return {
     objective: { id: nextId, progress: 0, completed: false },
     objectiveIndex: nextIndex,
     rewardCredits: definition.rewardCredits ?? 0,
     rewardFuel: definition.rewardFuel ?? 0,
     rewardBond: definition.rewardBond ?? 0,
-    memories: [{ id: `objective-${nextIndex}`, text: `The family completed: ${definition.label}.`, elapsedSeconds: next.elapsedSeconds }],
+    memories: [{ id: `objective-${state.objective.id}-${next.elapsedSeconds}`, text: `The family completed: ${definition.label}.`, elapsedSeconds: next.elapsedSeconds }],
   }
 }
 

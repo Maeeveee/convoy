@@ -118,4 +118,33 @@ describe("progression transactions", () => {
     expect(useGameStore.getState().route).toBe("ruins")
     expect(useGameStore.getState().memories.at(-1)?.text).toContain("ruins road")
   })
+
+  it("does not loop completed objectives or keep adding memories", () => {
+    useGameStore.getState().reset()
+    useGameStore.setState((state) => ({
+      objective: { ...state.objective, id: "keepReserve", progress: 79, completed: false },
+      objectiveIndex: 3,
+      resources: { ...state.resources, fuel: 81 },
+      memories: [],
+    }))
+
+    useGameStore.getState().tick(1)
+    const completedMemories = useGameStore.getState().memories.length
+    expect(useGameStore.getState().objective.completed).toBe(true)
+
+    useGameStore.getState().tick(1)
+    expect(useGameStore.getState().memories.length).toBe(completedMemories)
+  })
+
+  it("removes duplicate memory IDs when hydrating a legacy save", () => {
+    const state = createInitialState(0)
+    const duplicate = { id: "objective-706", text: "Repeated memory", elapsedSeconds: 10 }
+
+    useGameStore.getState().hydrate(
+      { ...state, memories: [duplicate, duplicate] },
+      { offlineSeconds: 0, fuelChange: 0, creditsGained: 0, distanceGained: 0 },
+    )
+
+    expect(useGameStore.getState().memories).toEqual([duplicate])
+  })
 })
