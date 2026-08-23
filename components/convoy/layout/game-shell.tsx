@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import {
   Gauge,
 } from "lucide-react"
@@ -10,22 +9,20 @@ import { useHydratedGame } from "@/hooks/use-hydrated-game"
 import { DAY_DURATION_SECONDS } from "@/lib/game/constants"
 import { useGameStore } from "@/lib/game/store"
 import { ConvoyScene } from "../scene"
-import { FuelPanel, GeneratorPanel, InteriorPanel, TaskPanel, UpgradePanel } from "../panels"
-import { JourneyObjective, LegacyPanel, ReportCard } from "../progression"
-import { DecisionDialogs, ResetJourneyDialog } from "../dialogs"
+import { GeneratorPanel } from "../panels"
+import { LegacyPanel, ReportCard } from "../progression"
+import { DecisionDialogs } from "../dialogs"
 import { OfflineSummaryDialog } from "../feedback"
 import { GameHeader, GameWarningBar, ResourceBar } from "."
 
 export function GameShell() {
-  const { isHydrated, resetGame } = useHydratedGame()
-  const [confirmReset, setConfirmReset] = useState(false)
+  const { isHydrated } = useHydratedGame()
   const resources = useGameStore((state) => state.resources)
   const capacities = useGameStore((state) => state.capacities)
   const bond = useGameStore((state) => state.bond)
   const distance = useGameStore((state) => state.distance)
   const day = useGameStore((state) => state.day)
   const elapsedSeconds = useGameStore((state) => state.elapsedSeconds)
-  const exterior = useGameStore((state) => state.exterior)
 
   useGameLoop(isHydrated)
 
@@ -62,7 +59,7 @@ export function GameShell() {
 
   return (
     <main className="min-h-svh bg-[#d8d2c4] text-[#20231f] dark:bg-[#171a18] dark:text-[#ebe5d7]">
-      <GameHeader day={day} secondsToNight={daySecondsRemaining} exteriorId={exterior.id} onReset={() => setConfirmReset(true)} />
+      <GameHeader day={day} secondsToNight={daySecondsRemaining} />
       <ResourceBar resources={resources} capacities={capacities} bond={bond} distance={distance} />
       <GameWarningBar warnings={warnings} />
 
@@ -74,12 +71,7 @@ export function GameShell() {
             <GeneratorPanel />
           </section>
           <aside className="divide-y divide-black/15 bg-[#d2ccbe] dark:divide-white/10 dark:bg-[#161a17]">
-            <FuelPanel />
-            <TaskPanel />
-            <UpgradePanel />
-            <InteriorPanel />
             <LegacyPanel />
-            <JourneyObjective />
             <ReportCard />
           </aside>
         </div>
@@ -88,7 +80,6 @@ export function GameShell() {
       <OfflineSummaryDialog />
       <DecisionDialogs />
 
-      {confirmReset && <ResetJourneyDialog onCancel={() => setConfirmReset(false)} onConfirm={() => { resetGame(); setConfirmReset(false) }} />}
     </main>
   )
 }
