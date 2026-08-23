@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { TASKS } from "@/lib/game/constants"
 import { useGameStore } from "@/lib/game/store"
@@ -7,6 +7,49 @@ import { SceneVehicle } from "./scene-vehicle"
 
 export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
   const [carOpen, setCarOpen] = useState(true)
+  const [actorPositions, setActorPositions] = useState({ mother: 0, child: 0 })
+
+  useEffect(() => {
+    if (!carOpen) {
+      return
+    }
+
+    let cancelled = false
+    const timers: number[] = []
+    const actors = [
+      { id: "mother" as const, range: 132, initialDelay: 300 + Math.random() * 1_200 },
+      { id: "child" as const, range: 124, initialDelay: 700 + Math.random() * 1_800 },
+    ]
+
+    const schedule = (actor: (typeof actors)[number], position: number) => {
+      if (cancelled) return
+      const waitTimer = window.setTimeout(() => {
+        if (cancelled) return
+        const destination = position === 0 ? actor.range * (actor.id === "mother" ? 1 : -1) : 0
+        const duration = 1_200 + Math.random() * 3_800
+        const started = performance.now()
+        const move = (now: number) => {
+          if (cancelled) return
+          const progress = Math.min((now - started) / duration, 1)
+          const eased = progress < 0.5 ? 2 * progress ** 2 : 1 - (-2 * progress + 2) ** 2 / 2
+          setActorPositions((current) => ({ ...current, [actor.id]: position + (destination - position) * eased }))
+          if (progress < 1) window.requestAnimationFrame(move)
+          else schedule(actor, destination)
+        }
+        window.requestAnimationFrame(move)
+      }, 2_500 + Math.random() * 8_000)
+      timers.push(waitTimer)
+    }
+
+    actors.forEach((actor) => {
+      timers.push(window.setTimeout(() => schedule(actor, 0), actor.initialDelay))
+    })
+
+    return () => {
+      cancelled = true
+      timers.forEach((timer) => window.clearTimeout(timer))
+    }
+  }, [carOpen])
   const characters = useGameStore((state) => state.characters)
   const exterior = useGameStore((state) => state.exterior)
   const pairBonds = useGameStore((state) => state.pairBonds)
@@ -19,7 +62,7 @@ export function ConvoyScene({ dayProgress }: { dayProgress: number }) {
     <section className="convoy-scene relative isolate h-72 overflow-hidden border-b border-black/20 sm:h-80 lg:h-[390px] dark:border-white/10">
       <SceneScenery />
       <div className="absolute top-4 left-4 border border-black/20 bg-[#e8dfcd]/85 px-3 py-2 text-[#252720] backdrop-blur-sm dark:border-white/15 dark:bg-[#1d221e]/85 dark:text-[#e8e3d6] lg:top-[16px] lg:left-[16px] lg:px-[12px] lg:py-[8px]"><p className="text-xs font-bold uppercase tracking-[0.16em] opacity-60 lg:text-[9px]">Road status</p><p className="mt-0.5 text-xs font-semibold lg:mt-[4px] lg:text-[12px]">{dayProgress < 0.35 ? "Morning haze" : dayProgress < 0.75 ? "Hard daylight" : "Dusk approaching"}</p></div>
-      <SceneVehicle exterior={exterior} fuel={fuel} carOpen={carOpen} onToggle={() => setCarOpen((open) => !open)} characters={characters} pairBonds={pairBonds} interaction={interaction} />
+      <SceneVehicle exterior={exterior} fuel={fuel} carOpen={carOpen} onToggle={() => setCarOpen((open) => !open)} actorPositions={carOpen ? actorPositions : { mother: 0, child: 0 }} characters={characters} pairBonds={pairBonds} interaction={interaction} />
     </section>
   )
 }
