@@ -13,31 +13,31 @@ export function UpgradePanel() {
   const affordable = Boolean(result && state.resources.credits >= result.cost)
 
   return (
-    <section className="p-4 sm:p-5">
-      <div className="mb-4 flex items-center gap-2">
-        <ShieldCheck className="size-4 text-[#8c6125] dark:text-[#d3a849]" />
+    <section className="p-4 sm:p-5 lg:p-[20px]">
+      <div className="mb-4 flex items-center gap-2 lg:mb-[16px] lg:gap-[8px]">
+        <ShieldCheck className="size-4 text-[#8c6125] dark:text-[#d3a849] lg:size-[16px]" />
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-[0.12em]">Vehicle shell</h2>
-          <p className="text-xs text-black/55 dark:text-white/50">Instant exterior upgrades</p>
+          <h2 className="text-sm font-bold uppercase tracking-[0.12em] lg:text-[14px]">Vehicle shell</h2>
+          <p className="text-xs text-black/55 dark:text-white/50 lg:text-[12px]">Instant exterior upgrades</p>
         </div>
       </div>
-      <div className="space-y-3">
-        <div className="flex items-center gap-1">
+      <div className="space-y-3 lg:space-y-[12px]">
+        <div className="flex items-center gap-1 lg:gap-[4px]">
           {[1, 2, 3].map((level) => (
-            <div key={level} className={`h-1.5 flex-1 ${level <= state.exterior.level ? "bg-[#ad7c2c]" : "bg-black/10 dark:bg-white/10"}`} />
+            <div key={level} className={`h-1.5 flex-1 lg:h-[6px] ${level <= state.exterior.level ? "bg-[#ad7c2c]" : "bg-black/10 dark:bg-white/10"}`} />
           ))}
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/50 dark:text-white/45">Current</p>
-          <p className="mt-1 font-semibold">{EXTERIOR_UPGRADES[state.exterior.id].label}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/50 dark:text-white/45 lg:text-[12px]">Current</p>
+          <p className="mt-1 font-semibold lg:mt-[4px] lg:text-[16px]">{EXTERIOR_UPGRADES[state.exterior.id].label}</p>
         </div>
         {result ? (
-          <div className="border border-black/15 bg-white/25 p-3 dark:border-white/10 dark:bg-white/[0.035]">
-            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/50 dark:text-white/45">Next tier</p>
-            <p className="mt-1 font-semibold">{result.label}</p>
-            <p className="mt-1 text-xs leading-5 text-black/55 dark:text-white/45">{result.description}</p>
+          <div className="border border-black/15 bg-white/25 p-3 dark:border-white/10 dark:bg-white/[0.035] lg:p-[12px]">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/50 dark:text-white/45 lg:text-[12px]">Next tier</p>
+            <p className="mt-1 font-semibold lg:mt-[4px] lg:text-[16px]">{result.label}</p>
+            <p className="mt-1 text-xs leading-5 text-black/55 dark:text-white/45 lg:mt-[4px] lg:text-[12px] lg:leading-[20px]">{result.description}</p>
             <Button
-              className="mt-3 w-full rounded-sm"
+              className="mt-3 w-full rounded-sm lg:mt-[12px] lg:h-[32px] lg:px-[12px] lg:text-[14px]"
               size="sm"
               disabled={!affordable}
               onClick={() => state.buyExterior(result.id as "emergencyTarp" | "enclosedVan")}
@@ -45,13 +45,13 @@ export function UpgradePanel() {
               Upgrade · {number.format(result.cost)} credits
             </Button>
             {!affordable && (
-              <p className="mt-2 text-xs text-black/50 dark:text-white/45" role="status">
+              <p className="mt-2 text-xs text-black/50 dark:text-white/45 lg:mt-[8px] lg:text-[12px]" role="status">
                 Need {number.format(result.cost - state.resources.credits)} more credits.
               </p>
             )}
           </div>
         ) : (
-          <p className="border border-[#7d913f]/40 bg-[#7d913f]/10 p-3 text-xs font-semibold text-[#516126] dark:text-[#bdcf72]">Exterior fully upgraded.</p>
+          <p className="border border-[#7d913f]/40 bg-[#7d913f]/10 p-3 text-xs font-semibold text-[#516126] dark:text-[#bdcf72] lg:p-[12px] lg:text-[12px]">Exterior fully upgraded.</p>
         )}
       </div>
     </section>

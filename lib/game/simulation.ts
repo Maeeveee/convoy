@@ -6,8 +6,9 @@ import {
   MAX_ACTIVE_TICK_SECONDS,
   ENERGY_COST_PER_SECOND,
   ROUTES,
+  LEGACY_PRODUCTION_BONUS,
 } from "./constants"
-import { generatorCycleSeconds } from "./generators"
+import { allGeneratorsOutputMultiplier, allGeneratorsSpeedMultiplier, generatorCycleSeconds } from "./generators"
 import type { GameState, ResourceKey } from "./types"
 
 const clamp = (value: number, min: number, max: number) =>
@@ -27,7 +28,8 @@ function taskModifiers(state: GameState) {
 }
 
 export function creditCycleMultiplier(state: GameState) {
-  return taskModifiers(state).credits
+  const legacyMultiplier = 1 + state.meta.totalLegacyEarned * LEGACY_PRODUCTION_BONUS
+  return taskModifiers(state).credits * allGeneratorsOutputMultiplier(state) * legacyMultiplier
 }
 
 export function creditOutputPerCycle(state: GameState, owned: number, baseOutput: number) {
@@ -39,15 +41,15 @@ export function getPassiveRates(state: GameState) {
     fuel: 0,
     credits: 0,
   }
-  const modifiers = taskModifiers(state)
+  const creditMultiplier = creditCycleMultiplier(state)
 
   for (const [id, generator] of Object.entries(state.generators) as [
     keyof typeof GENERATORS,
     GameState["generators"][keyof GameState["generators"]],
   ][]) {
     const definition = GENERATORS[id]
-    const rate = (generator.owned * definition.outputPerCycle) / generatorCycleSeconds(id, generator.owned)
-    rates.credits += rate * modifiers.credits
+    const rate = (generator.owned * definition.outputPerCycle) / generatorCycleSeconds(id, generator.owned, allGeneratorsSpeedMultiplier(state))
+    rates.credits += rate * creditMultiplier
   }
 
   return {
@@ -69,7 +71,7 @@ export function applyGeneratorCycles(
   ][]) {
     if (generator.owned === 0) continue
     const definition = GENERATORS[id]
-    const cycleSeconds = generatorCycleSeconds(id, generator.owned)
+    const cycleSeconds = generatorCycleSeconds(id, generator.owned, allGeneratorsSpeedMultiplier(state))
     const totalProgress = generator.cycleProgressSeconds + elapsedSeconds
     const completedCycles = Math.floor(totalProgress / cycleSeconds)
     const progress = totalProgress % cycleSeconds

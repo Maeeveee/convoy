@@ -28,4 +28,9 @@ describe("MVP balance guardrails", () => {
       FUEL_PRICE_PER_UNIT * 10,
     )
   })
+
+  it("starts with enough credits for Father's toolkit but not emergency cans", () => {
+    expect(INITIAL_RESOURCES.credits).toBeGreaterThanOrEqual(GENERATORS.fatherToolkit.basePrice)
+    expect(INITIAL_RESOURCES.credits).toBeLessThan(GENERATORS.emergencyFood.basePrice)
+  })
 })

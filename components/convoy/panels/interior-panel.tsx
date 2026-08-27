@@ -11,10 +11,10 @@ export function InteriorPanel() {
   const state = useGameStore()
   const next = nextInteriorUpgrade(state)
   return (
-    <section className="border-t border-black/15 p-4 sm:p-5 dark:border-white/10">
-      <div className="mb-3 flex items-center gap-2"><Home className="size-4 text-[#8c6125] dark:text-[#d3a849]" /><h2 className="text-sm font-bold uppercase tracking-[0.12em]">Interior</h2></div>
-      <p className="text-xs text-black/55 dark:text-white/50">{INTERIOR_UPGRADES[state.interior.id].label}</p>
-      {next ? <Button size="sm" className="mt-3 w-full rounded-sm" disabled={state.resources.credits < next.cost} onClick={() => state.buyInterior(next.id as "semiLivable" | "comfortableCabin")}>Improve cabin · {number.format(next.cost)} credits</Button> : <p className="mt-3 text-xs text-[#64762e]">Cabin fully upgraded.</p>}
+    <section className="border-t border-black/15 p-4 sm:p-5 dark:border-white/10 lg:p-[20px]">
+      <div className="mb-3 flex items-center gap-2 lg:mb-[12px] lg:gap-[8px]"><Home className="size-4 text-[#8c6125] dark:text-[#d3a849] lg:size-[16px]" /><h2 className="text-sm font-bold uppercase tracking-[0.12em] lg:text-[14px]">Interior</h2></div>
+      <p className="text-xs text-black/55 dark:text-white/50 lg:text-[12px]">{INTERIOR_UPGRADES[state.interior.id].label}</p>
+      {next ? <Button size="sm" className="mt-3 w-full rounded-sm lg:mt-[12px] lg:h-[32px] lg:px-[12px] lg:text-[14px]" disabled={state.resources.credits < next.cost} onClick={() => state.buyInterior(next.id as "semiLivable" | "comfortableCabin")}>Improve cabin · {number.format(next.cost)} credits</Button> : <p className="mt-3 text-xs text-[#64762e] lg:mt-[12px] lg:text-[12px]">Cabin fully upgraded.</p>}
     </section>
   )
 }

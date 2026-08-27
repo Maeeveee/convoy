@@ -11,12 +11,12 @@ import { useGameStore } from "@/lib/game/store"
 import { ConvoyScene } from "../scene"
 import { GeneratorPanel } from "../panels"
 import { LegacyPanel, ReportCard } from "../progression"
-import { DecisionDialogs } from "../dialogs"
+import { DecisionDialogs, OnboardingDialog } from "../dialogs"
 import { OfflineSummaryDialog } from "../feedback"
 import { GameHeader, GameWarningBar, ResourceBar } from "."
 
 export function GameShell() {
-  const { isHydrated } = useHydratedGame()
+  const { isHydrated, showOnboarding, completeOnboarding } = useHydratedGame()
   const resources = useGameStore((state) => state.resources)
   const capacities = useGameStore((state) => state.capacities)
   const bond = useGameStore((state) => state.bond)
@@ -24,7 +24,7 @@ export function GameShell() {
   const day = useGameStore((state) => state.day)
   const elapsedSeconds = useGameStore((state) => state.elapsedSeconds)
 
-  useGameLoop(isHydrated)
+  useGameLoop(isHydrated && !showOnboarding)
 
   if (!isHydrated) {
     return (
@@ -63,11 +63,11 @@ export function GameShell() {
       <ResourceBar resources={resources} capacities={capacities} bond={bond} distance={distance} />
       <GameWarningBar warnings={warnings} />
 
-      <div className="mx-auto max-w-[1600px]">
+      <div className="mx-auto max-w-[120rem]">
         <ConvoyScene dayProgress={dayProgress} />
 
         <div className="grid border-t border-black/15 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.38fr)] dark:border-white/10">
-          <section className="min-w-0 border-b border-black/15 bg-[#e5dfd2] p-4 sm:p-6 lg:border-r lg:border-b-0 dark:border-white/10 dark:bg-[#1b201c]">
+          <section className="min-w-0 border-b border-black/15 bg-[#e5dfd2] p-4 sm:p-6 lg:border-r lg:border-b-0 lg:p-[24px] dark:border-white/10 dark:bg-[#1b201c]">
             <GeneratorPanel />
           </section>
           <aside className="divide-y divide-black/15 bg-[#d2ccbe] dark:divide-white/10 dark:bg-[#161a17]">
@@ -79,6 +79,7 @@ export function GameShell() {
 
       <OfflineSummaryDialog />
       <DecisionDialogs />
+      {showOnboarding && <OnboardingDialog onComplete={completeOnboarding} />}
 
     </main>
   )

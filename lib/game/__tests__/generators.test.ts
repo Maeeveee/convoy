@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest"
 
+import { createInitialState } from "../store"
 import {
   affordableGeneratorQuantity,
+  allGeneratorsMilestonesReached,
+  allGeneratorsMilestoneCount,
+  allGeneratorsMilestoneRows,
+  allGeneratorsOutputMultiplier,
+  allGeneratorsSpeedMultiplier,
   bulkGeneratorPrice,
   generatorMilestoneMultiplier,
+  generatorMilestonesReached,
   generatorPrice,
+  hasOwnedAllGenerators,
   nextGeneratorMilestone,
   nextGeneratorMilestoneQuantity,
+  nextAllGeneratorsMilestone,
 } from "../generators"
 
 describe("generator pricing", () => {
@@ -38,5 +47,81 @@ describe("generator pricing", () => {
     expect(generatorMilestoneMultiplier(50)).toBe(4)
     expect(generatorMilestoneMultiplier(200)).toBe(16)
     expect(generatorMilestoneMultiplier(300)).toBe(32)
+  })
+
+  it("detects when every generator has been purchased", () => {
+    const state = createInitialState(0)
+    expect(hasOwnedAllGenerators(state)).toBe(false)
+
+    const generators = Object.fromEntries(
+      Object.entries(state.generators).map(([id, generator]) => [
+        id,
+        { ...generator, owned: 1 },
+      ]),
+    ) as typeof state.generators
+    expect(hasOwnedAllGenerators({ ...state, generators })).toBe(true)
+  })
+
+  it("scales all-generator output and speed milestones", () => {
+    const initial = createInitialState(0)
+    const withEveryGenerator = (owned: number) => ({
+      ...initial,
+      generators: Object.fromEntries(
+        Object.entries(initial.generators).map(([id, generator]) => [
+          id,
+          { ...generator, owned },
+        ]),
+      ) as typeof initial.generators,
+    })
+
+    expect(allGeneratorsMilestoneCount(withEveryGenerator(1))).toBe(1)
+    expect(allGeneratorsOutputMultiplier(withEveryGenerator(1))).toBe(1.5)
+    expect(allGeneratorsSpeedMultiplier(withEveryGenerator(1))).toBe(1)
+    expect(allGeneratorsOutputMultiplier(withEveryGenerator(25))).toBe(1.5)
+    expect(allGeneratorsSpeedMultiplier(withEveryGenerator(25))).toBe(2)
+    expect(allGeneratorsOutputMultiplier(withEveryGenerator(50))).toBe(2.25)
+    expect(allGeneratorsSpeedMultiplier(withEveryGenerator(100))).toBe(4)
+    expect(allGeneratorsOutputMultiplier(withEveryGenerator(200))).toBe(3.375)
+    expect(allGeneratorsSpeedMultiplier(withEveryGenerator(300))).toBe(8)
+    expect(nextAllGeneratorsMilestone(withEveryGenerator(200))).toBe(300)
+    expect(nextAllGeneratorsMilestone(withEveryGenerator(347))).toBe(400)
+  })
+
+  it("describes unlocked and upcoming all-generator bonuses", () => {
+    const initial = createInitialState(0)
+    const generators = Object.fromEntries(
+      Object.entries(initial.generators).map(([id, generator]) => [
+        id,
+        { ...generator, owned: 25 },
+      ]),
+    ) as typeof initial.generators
+    const rows = allGeneratorsMilestoneRows({ ...initial, generators })
+
+    expect(rows.map((row) => row.threshold)).toEqual([1, 25, 50, 100, 200])
+    expect(rows[1]).toMatchObject({ unlocked: true, bonusType: "speed", speedMultiplier: 2 })
+    expect(rows[2]).toMatchObject({ unlocked: false, bonusType: "output", outputMultiplier: 2.25 })
+  })
+
+  it("reports every individual milestone crossed by a bulk purchase", () => {
+    expect(generatorMilestonesReached(24, 101)).toEqual([25, 50, 100])
+    expect(generatorMilestonesReached(199, 301)).toEqual([200, 300])
+  })
+
+  it("reports all-generator buffs unlocked by a purchase", () => {
+    const initial = createInitialState(0)
+    const at = (owned: number) => ({
+      ...initial,
+      generators: Object.fromEntries(
+        Object.entries(initial.generators).map(([id, generator]) => [
+          id,
+          { ...generator, owned },
+        ]),
+      ) as typeof initial.generators,
+    })
+
+    expect(allGeneratorsMilestonesReached(at(24), at(50))).toMatchObject([
+      { threshold: 25, bonusType: "speed" },
+      { threshold: 50, bonusType: "output" },
+    ])
   })
 })

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { chooseEvent, eventById, EVENTS, NIGHT_CHOICES } from "../events"
 import { reportCard } from "../progression"
 import { createInitialState } from "../store"
+import { dialogueForEvent, NIGHT_DIALOGUE, ROAD_DIALOGUES } from "../dialogues"
 
 describe("events and report card", () => {
   it("selects only events eligible for the current exterior", () => {
@@ -37,5 +38,18 @@ describe("events and report card", () => {
 
     expect(report.score).toBe(130)
     expect(report.label).toBe("Full Survivor")
+  })
+
+  it("provides every family conversation pairing and a group story", () => {
+    const participantSets = ROAD_DIALOGUES.map((dialogue) => dialogue.participants.join("-"))
+    expect(participantSets).toContain("mother-child")
+    expect(participantSets).toContain("father-child")
+    expect(participantSets).toContain("father-mother")
+    expect(ROAD_DIALOGUES).toContainEqual(expect.objectContaining({ participants: ["father", "mother", "child"], pose: "sit" }))
+  })
+
+  it("provides event and night family scenes", () => {
+    expect(dialogueForEvent("looseBelt")).toMatchObject({ participants: ["father", "mother", "child"], pose: "sit" })
+    expect(NIGHT_DIALOGUE.lines.length).toBeGreaterThanOrEqual(3)
   })
 })

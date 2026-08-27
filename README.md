@@ -22,6 +22,7 @@ The game is built around short active sessions of five to fifteen minutes, with 
 - Family memory log shown in the journey report
 - CSS-based vehicle, character, scenery, and road animation
 - Optional road ambience and journey music
+- First-run onboarding guide for new players
 
 ## Tech Stack
 
@@ -119,6 +120,8 @@ See [PROJECT.md](./PROJECT.md) for the full design document and [IMPLEMENTATION_
 ## Persistence
 
 Game progress is stored locally in the browser under the `convoy-save` key. Saves include a versioned schema, current-run progression, pending decisions, objectives, routes, settlement state, and family memories.
+
+New players receive a short first-run field guide covering movement, resources, family assignments, and road decisions. Completing or skipping the guide is stored separately from the game save, so returning players go directly to their journey.
 
 Offline progress is capped at ten hours and generator production runs at sixty percent effective time while away. Bond does not gain offline.
 
